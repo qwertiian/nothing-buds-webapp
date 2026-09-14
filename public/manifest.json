@@ -3,6 +3,7 @@
   "short_name": "Ear (OS)",
   "description": "Desktop & Web companion for Nothing and CMF Earbuds",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
@@ -10,8 +11,8 @@
     {
       "src": "/assets/anc_on_icon.svg",
       "sizes": "192x192 512x512",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
-

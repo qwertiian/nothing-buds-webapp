@@ -7,6 +7,7 @@ const HELPER_SCRIPT = path.join(__dirname, 'scripts', 'bluetooth-helper.ps1');
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [
     react(),
     {
