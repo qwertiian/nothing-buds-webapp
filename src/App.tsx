@@ -200,6 +200,8 @@ export function App() {
               ultraBass={state.ultraBass}
               onSetUltraBass={setUltraBass}
               model={state.model}
+              isConnected={state.connected}
+              onRequestConnect={handleOpenConnect}
             />
           )}
 

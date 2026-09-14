@@ -11,6 +11,8 @@ interface EqualizerStudioProps {
   ultraBass: { enabled: boolean; level: number };
   onSetUltraBass: (enabled: boolean, level?: number) => void;
   model: EarbudModel;
+  isConnected?: boolean;
+  onRequestConnect?: () => void;
 }
 
 export const EqualizerStudio: React.FC<EqualizerStudioProps> = ({
@@ -21,6 +23,8 @@ export const EqualizerStudio: React.FC<EqualizerStudioProps> = ({
   ultraBass,
   onSetUltraBass,
   model,
+  isConnected = false,
+  onRequestConnect,
 }) => {
   const [activeTab, setActiveTab] = useState<'preset' | 'custom' | 'ultrabass'>('preset');
 
@@ -54,9 +58,20 @@ export const EqualizerStudio: React.FC<EqualizerStudioProps> = ({
     <div className="p-5 sm:p-7 rounded-2xl theme-card flex flex-col gap-6 shadow-xl transition-colors duration-300">
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <span className="glyph-dot" />
           <h2 className="font-ndot text-xl text-[var(--text-main)] tracking-wider uppercase">EQUALIZER</h2>
+          {isConnected ? (
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              HARDWARE SYNCED
+            </span>
+          ) : (
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              OFFLINE
+            </span>
+          )}
         </div>
 
         {/* Tab switch */}

@@ -459,20 +459,33 @@ export class WebSerialManager {
     this.notify();
     const byte = eqPresetToByte(preset);
     await this.sendCommand(COMMANDS.SET_EQ, [byte, 0x00]);
+    setTimeout(() => {
+      this.sendCommand(COMMANDS.READ_EQ).catch(() => {});
+    }, 180);
   }
 
   public async setCustomEq(eq: CustomEqSettings) {
     this.state.eqPreset = 'custom';
     this.state.customEq = eq;
     this.notify();
+    // 1. Switch to custom preset mode (preset 4)
+    await this.sendCommand(COMMANDS.SET_EQ, [0x04, 0x00]);
+    // 2. Transmit custom 3-band curve payload
     const payload = buildCustomEqPayload(eq);
     await this.sendCommand(COMMANDS.SET_CUSTOM_EQ, payload);
+    setTimeout(() => {
+      this.sendCommand(COMMANDS.READ_EQ).catch(() => {});
+    }, 180);
   }
 
   public async setUltraBass(enabled: boolean, level: number = 3) {
     this.state.ultraBass = { enabled, level };
     this.notify();
-    await this.sendCommand(COMMANDS.SET_ENHANCED_BASS, [enabled ? 0x01 : 0x00, level * 2]);
+    const wireLevel = enabled ? Math.round(Math.max(1, Math.min(5, level)) * 2) : 0x00;
+    await this.sendCommand(COMMANDS.SET_ENHANCED_BASS, [enabled ? 0x01 : 0x00, wireLevel]);
+    setTimeout(() => {
+      this.sendCommand(COMMANDS.READ_ENHANCED_BASS).catch(() => {});
+    }, 180);
   }
 
   public async setInEarDetection(enabled: boolean) {

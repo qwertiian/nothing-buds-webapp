@@ -137,22 +137,22 @@ export function byteToAncMode(val: number): AncMode {
     case 2: return 'mid';
     case 3: return 'low';
     case 4: return 'adaptive';
-    case 5: return 'off';
-    case 7: return 'transparency';
+    case 5: return 'transparency';
+    case 7: return 'off';
     default: return 'off';
   }
 }
 
-// ANC Mode to Packet Byte (Official Nothing X / RFCOMM specification)
-// 1 = High / Cancellation, 2 = Mid, 3 = Low, 4 = Adaptive, 5 = Off, 7 = Transparency
+// ANC Mode to Packet Byte
+// 1 = High / Cancellation, 2 = Mid, 3 = Low, 4 = Adaptive, 5 = Transparency, 7 = Off
 export function ancModeToByte(mode: AncMode): number {
   switch (mode) {
     case 'high': return 0x01;
     case 'mid': return 0x02;
     case 'low': return 0x03;
     case 'adaptive': return 0x04;
-    case 'off': return 0x05;
-    case 'transparency': return 0x07;
+    case 'transparency': return 0x05;
+    case 'off': return 0x07;
   }
 }
 
@@ -259,9 +259,10 @@ export function buildCustomEqPayload(eq: CustomEqSettings): number[] {
     0x00, 0x00, 0x00, 0x00, 0x00
   ];
 
-  const levels = [eq.bass, eq.mid, eq.treble];
-  let highest = Math.max(...levels);
-  highest = highest / -1;
+  // Hardware DSP bands are ordered: [mid, treble, bass]
+  const levels = [eq.mid, eq.treble, eq.bass];
+  const maxVal = Math.max(...levels);
+  const highest = maxVal !== 0 ? maxVal / -1 : 0.0;
 
   const totalBytes = formatFloatForEq(highest, true);
   for (let j = 0; j < 4; j++) {

@@ -205,6 +205,66 @@ export const SUPPORTED_DEVICES: EarbudModel[] = [
     hasEarFitTest: true,
   },
   {
+    id: 'cmf_buds_2',
+    name: 'CMF Buds 2',
+    codename: 'donphan_dark_grey',
+    pokemonName: 'Donphan',
+    pokemonDexNumber: 232,
+    pokemonType: ['Ground', 'Steel'],
+    pokemonFunFact: 'CMF Buds 2 features 42dB Active Noise Cancellation, Ultra Bass Technology, and a tactile lanyard roller.',
+    baseId: 'B168',
+    sku: '97',
+    leftImg: '/assets/donphan_black_left.webp',
+    rightImg: '/assets/donphan_black_right.webp',
+    caseImg: '/assets/donphan_black_case.webp',
+    hasAnc: true,
+    maxAncDb: 42,
+    hasAdvancedEq: false,
+    hasUltraBass: true,
+    hasPersonalizedAnc: false,
+    hasEarFitTest: false,
+  },
+  {
+    id: 'cmf_buds_2_orange',
+    name: 'CMF Buds 2 Orange',
+    codename: 'donphan_orange',
+    pokemonName: 'Donphan',
+    pokemonDexNumber: 232,
+    pokemonType: ['Ground', 'Fire'],
+    pokemonFunFact: 'Energetic vibrant orange colorway of CMF Buds 2 with 42dB Active Noise Cancellation.',
+    baseId: 'B168',
+    sku: '58',
+    leftImg: '/assets/donphan_orange_left.webp',
+    rightImg: '/assets/donphan_orange_right.webp',
+    caseImg: '/assets/donphan_orange_case.webp',
+    hasAnc: true,
+    maxAncDb: 42,
+    hasAdvancedEq: false,
+    hasUltraBass: true,
+    hasPersonalizedAnc: false,
+    hasEarFitTest: false,
+  },
+  {
+    id: 'cmf_buds_2_white',
+    name: 'CMF Buds 2 Light Grey',
+    codename: 'donphan_white',
+    pokemonName: 'Donphan',
+    pokemonDexNumber: 232,
+    pokemonType: ['Ground', 'Normal'],
+    pokemonFunFact: 'Minimalist light grey edition of CMF Buds 2 with custom 12.4mm bio-fiber driver.',
+    baseId: 'B168',
+    sku: '54',
+    leftImg: '/assets/donphan_white_left.webp',
+    rightImg: '/assets/donphan_white_right.webp',
+    caseImg: '/assets/donphan_white_case.webp',
+    hasAnc: true,
+    maxAncDb: 42,
+    hasAdvancedEq: false,
+    hasUltraBass: true,
+    hasPersonalizedAnc: false,
+    hasEarFitTest: false,
+  },
+  {
     id: 'cmf_buds_pro_orange',
     name: 'CMF Buds Pro',
     codename: 'corsola_orange',
@@ -308,10 +368,10 @@ export const SKU_TO_MODEL_MAP: Record<string, string> = {
   '81': 'cmf_buds_pro_2_orange',
   '82': 'cmf_buds_pro_2_blue',
   '83': 'cmf_buds_pro_2_blue',
-  '97': 'cmf_buds_pro_2_blue',
-  '51': 'cmf_buds_pro_2_blue',
-  '58': 'cmf_buds_orange',
-  '54': 'cmf_buds_orange',
+  '97': 'cmf_buds_2',
+  '51': 'cmf_buds_2',
+  '58': 'cmf_buds_2_orange',
+  '54': 'cmf_buds_2_white',
   '48': 'cmf_neckband_pro_orange',
   '11200005': 'ear_open_white',
 };
@@ -319,8 +379,8 @@ export const SKU_TO_MODEL_MAP: Record<string, string> = {
 export function findModelBySku(sku: string, serial: string = ''): EarbudModel {
   if (serial.startsWith('13')) {
     // 13 is CMF product line
-    const modelId = SKU_TO_MODEL_MAP[sku] || 'cmf_buds_pro_2_blue';
-    return SUPPORTED_DEVICES.find(d => d.id === modelId) || SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_pro_2_blue')!;
+    const modelId = SKU_TO_MODEL_MAP[sku] || 'cmf_buds_2';
+    return SUPPORTED_DEVICES.find(d => d.id === modelId) || SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_2')!;
   }
   const modelId = SKU_TO_MODEL_MAP[sku] || 'ear_2024_black';
   return SUPPORTED_DEVICES.find(d => d.id === modelId) || SUPPORTED_DEVICES[0];
@@ -332,18 +392,27 @@ export function findModelByBase(baseId: string): EarbudModel {
 
 export function findModelByName(name: string): EarbudModel {
   const n = name.toLowerCase();
-  if (n.includes('pro 2') || n.includes('buds 2') || n.includes('espeon')) {
+  // Check CMF Buds Pro 2 explicitly first
+  if (n.includes('pro 2') || n.includes('buds pro 2') || n.includes('espeon')) {
     return SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_pro_2_blue') || SUPPORTED_DEVICES[0];
   }
-  if (n.includes('neckband') || n.includes('crobat')) {
-    return SUPPORTED_DEVICES.find(d => d.id === 'cmf_neckband_pro_orange') || SUPPORTED_DEVICES[0];
+  // Check CMF Buds 2
+  if (n.includes('buds 2') || n.includes('cmf 2')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_2') || SUPPORTED_DEVICES[0];
   }
+  // Check CMF Buds Pro (1st gen)
   if (n.includes('buds pro') || n.includes('corsola')) {
     return SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_pro_orange') || SUPPORTED_DEVICES[0];
   }
-  if (n.includes('cmf') || n.includes('donphan')) {
-    return SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_orange') || SUPPORTED_DEVICES[0];
+  // Check CMF Neckband Pro
+  if (n.includes('neckband') || n.includes('crobat')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'cmf_neckband_pro_orange') || SUPPORTED_DEVICES[0];
   }
+  // Check CMF Buds
+  if (n.includes('cmf buds') || n.includes('cmf') || n.includes('donphan')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_2') || SUPPORTED_DEVICES[0];
+  }
+  // Check Nothing Ear models
   if (n.includes('ear (stick)') || n.includes('stick')) {
     return SUPPORTED_DEVICES.find(d => d.id === 'ear_stick') || SUPPORTED_DEVICES[0];
   }
