@@ -33,7 +33,7 @@ export class WebSerialManager {
     connected: false,
     isConnecting: false,
     isSimulator: false,
-    model: SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_pro_2_blue') || SUPPORTED_DEVICES[0],
+    model: SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_2') || SUPPORTED_DEVICES[0],
     battery: {
       left: 100,
       right: 100,
@@ -363,7 +363,7 @@ export class WebSerialManager {
       }
       case RESPONSE_COMMANDS.BATTERY_RESP_1:
       case RESPONSE_COMMANDS.BATTERY_RESP_2: {
-        const bat = parseBattery(raw);
+        const bat = parseBattery(raw, this.state.battery.case);
         this.state.battery = bat;
         this.notify();
         break;
@@ -371,15 +371,18 @@ export class WebSerialManager {
       case RESPONSE_COMMANDS.ANC_RESP_1:
       case RESPONSE_COMMANDS.ANC_RESP_2: {
         const anc = parseAnc(raw);
-        this.state.ancMode = anc;
-        this.notify();
+        if (anc) {
+          this.state.ancMode = anc;
+          this.notify();
+        }
         break;
       }
-      case RESPONSE_COMMANDS.EQ_RESP_1:
-      case RESPONSE_COMMANDS.EQ_RESP_2: {
+      case RESPONSE_COMMANDS.EQ_RESP_1: {
         const eq = parseEq(raw);
-        this.state.eqPreset = eq;
-        this.notify();
+        if (eq) {
+          this.state.eqPreset = eq;
+          this.notify();
+        }
         break;
       }
       case RESPONSE_COMMANDS.GESTURE_RESP: {
@@ -443,9 +446,6 @@ export class WebSerialManager {
     this.notify();
     const byte = ancModeToByte(mode);
     await this.sendCommand(COMMANDS.SET_ANC, [0x01, byte, 0x00]);
-    setTimeout(() => {
-      this.sendCommand(COMMANDS.READ_ANC).catch(() => {});
-    }, 180);
   }
 
   public async setPersonalizedAnc(enabled: boolean) {
@@ -459,9 +459,6 @@ export class WebSerialManager {
     this.notify();
     const byte = eqPresetToByte(preset);
     await this.sendCommand(COMMANDS.SET_EQ, [byte, 0x00]);
-    setTimeout(() => {
-      this.sendCommand(COMMANDS.READ_EQ).catch(() => {});
-    }, 180);
   }
 
   public async setCustomEq(eq: CustomEqSettings) {
@@ -473,9 +470,6 @@ export class WebSerialManager {
     // 2. Transmit custom 3-band curve payload
     const payload = buildCustomEqPayload(eq);
     await this.sendCommand(COMMANDS.SET_CUSTOM_EQ, payload);
-    setTimeout(() => {
-      this.sendCommand(COMMANDS.READ_EQ).catch(() => {});
-    }, 180);
   }
 
   public async setUltraBass(enabled: boolean, level: number = 3) {
@@ -483,9 +477,6 @@ export class WebSerialManager {
     this.notify();
     const wireLevel = enabled ? Math.round(Math.max(1, Math.min(5, level)) * 2) : 0x00;
     await this.sendCommand(COMMANDS.SET_ENHANCED_BASS, [enabled ? 0x01 : 0x00, wireLevel]);
-    setTimeout(() => {
-      this.sendCommand(COMMANDS.READ_ENHANCED_BASS).catch(() => {});
-    }, 180);
   }
 
   public async setInEarDetection(enabled: boolean) {

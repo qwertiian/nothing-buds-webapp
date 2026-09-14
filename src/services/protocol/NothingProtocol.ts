@@ -35,7 +35,7 @@ export const RESPONSE_COMMANDS = {
   ANC_RESP_1: 16414,         // 0x401E
   ANC_RESP_2: 57347,         // 0xE003
   EQ_RESP_1: 16415,          // 0x401F
-  EQ_RESP_2: 16464,          // 0x4050
+  LISTENING_RESP: 16464,     // 0x4050 (CMD_LISTENING_GET)
   LATENCY_RESP: 16449,       // 0x4041
   FIRMWARE_RESP: 16450,      // 0x4042
   CUSTOM_EQ_RESP: 16452,     // 0x4044
@@ -80,11 +80,11 @@ export function extractCommand(rawData: Uint8Array): number {
 }
 
 // Battery Parser
-export function parseBattery(rawData: Uint8Array) {
+export function parseBattery(rawData: Uint8Array, currentCase: number = 100) {
   // rawData contains connected count at byte 8, followed by (deviceId, levelAndCharging) pairs
   let left = 100;
   let right = 100;
-  let caseBat = 90;
+  let caseBat = currentCase;
   let leftCharging = false;
   let rightCharging = false;
   let caseCharging = false;
@@ -99,15 +99,22 @@ export function parseBattery(rawData: Uint8Array) {
         const level = val & 0x7F;
         const charging = (val & 0x80) === 0x80;
 
-        if (deviceId === 0x02) { // Left
-          left = level;
-          leftCharging = charging;
-        } else if (deviceId === 0x03) { // Right
-          right = level;
-          rightCharging = charging;
-        } else if (deviceId === 0x04) { // Case
-          caseBat = level;
-          caseCharging = charging;
+        if (level <= 100) {
+          if (deviceId === 0x01) { // Both buds
+            left = level;
+            right = level;
+            leftCharging = charging;
+            rightCharging = charging;
+          } else if (deviceId === 0x02) { // Left
+            left = level;
+            leftCharging = charging;
+          } else if (deviceId === 0x03) { // Right
+            right = level;
+            rightCharging = charging;
+          } else if (deviceId === 0x04) { // Case
+            caseBat = level;
+            caseCharging = charging;
+          }
         }
       }
     }
@@ -117,8 +124,8 @@ export function parseBattery(rawData: Uint8Array) {
 }
 
 // ANC Mode Parser
-export function parseAnc(rawData: Uint8Array): AncMode {
-  if (rawData.length < 10) return 'off';
+export function parseAnc(rawData: Uint8Array): AncMode | null {
+  if (rawData.length < 10) return null;
   // Check standard Nothing payload format [kind=1, value, 0] starting at byte 8
   const payload = rawData.subarray(8);
   for (let offset = 0; offset < payload.length - 1; offset += 3) {
@@ -131,7 +138,7 @@ export function parseAnc(rawData: Uint8Array): AncMode {
   return byteToAncMode(rawData[9]);
 }
 
-export function byteToAncMode(val: number): AncMode {
+export function byteToAncMode(val: number): AncMode | null {
   switch (val) {
     case 1: return 'high';
     case 2: return 'mid';
@@ -139,7 +146,7 @@ export function byteToAncMode(val: number): AncMode {
     case 4: return 'adaptive';
     case 5: return 'transparency';
     case 7: return 'off';
-    default: return 'off';
+    default: return null;
   }
 }
 
@@ -199,8 +206,8 @@ export const GESTURE_BYTE_TO_ACTION: Record<number, string> = {
 };
 
 // Equalizer Preset Parser
-export function parseEq(rawData: Uint8Array): EqPreset {
-  if (rawData.length <= 8) return 'balanced';
+export function parseEq(rawData: Uint8Array): EqPreset | null {
+  if (rawData.length <= 8) return null;
   const mode = rawData[8];
   switch (mode) {
     case 0: return 'balanced';
@@ -209,7 +216,7 @@ export function parseEq(rawData: Uint8Array): EqPreset {
     case 3: return 'voice';
     case 4: return 'custom';
     case 6: return 'advanced';
-    default: return 'balanced';
+    default: return null;
   }
 }
 
