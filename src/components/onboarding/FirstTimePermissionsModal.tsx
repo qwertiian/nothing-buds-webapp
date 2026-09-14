@@ -116,3 +116,4 @@ export const FirstTimePermissionsModal: React.FC<FirstTimePermissionsModalProps>
     </div>
   );
 };
+

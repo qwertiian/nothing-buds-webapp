@@ -2,7 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn, exec } from 'child_process';
+import { spawn, exec, execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +29,11 @@ const MIME_TYPES = {
 // Check if dist exists, if not build it
 if (!fs.existsSync(DIST_DIR)) {
   console.log('Building project before launching desktop mode...');
+  try {
+    execSync('npm run build', { stdio: 'inherit', cwd: __dirname });
+  } catch (err) {
+    console.error('Build failed:', err);
+  }
 }
 
 const server = http.createServer((req, res) => {
