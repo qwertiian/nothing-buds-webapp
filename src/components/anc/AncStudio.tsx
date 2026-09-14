@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AncMode, EarbudModel } from '../../models/types';
-import { Volume2, VolumeX, Radio, Sparkles, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Volume2, VolumeX, Radio, Sparkles, CheckCircle2 } from 'lucide-react';
 
 interface AncStudioProps {
   ancMode: AncMode;
@@ -17,91 +17,126 @@ export const AncStudio: React.FC<AncStudioProps> = ({
   onSetPersonalizedAnc,
   model,
 }) => {
-  const [lastAncLevel, setLastAncLevel] = useState<'high' | 'mid' | 'low' | 'adaptive'>('high');
   const [showFitTest, setShowFitTest] = useState(false);
+  const [fitTestStep, setFitTestStep] = useState<'intro' | 'testing' | 'result'>('intro');
+  const [lastAncLevel, setLastAncLevel] = useState<'high' | 'mid' | 'low' | 'adaptive'>('high');
 
   if (!model.hasAnc) {
     return (
-      <div className="bg-[#111111] rounded-2xl border border-white/6 p-8 flex flex-col items-center justify-center text-center min-h-[300px]">
-        <VolumeX size={48} className="text-white/20 mb-4" />
-        <h2 className="font-ndot text-2xl text-white mb-2">NO ANC</h2>
-        <p className="text-white/50 text-sm max-w-sm">
-          {model.name} does not support Active Noise Cancellation.
+      <div className="p-6 rounded-2xl theme-card flex flex-col items-center justify-center text-center">
+        <VolumeX className="w-8 h-8 text-[var(--text-dim)] mb-2" />
+        <h3 className="font-ndot text-lg text-[var(--text-main)]">NOISE CONTROL NOT SUPPORTED</h3>
+        <p className="text-xs font-mono text-[var(--text-sub)] mt-1 max-w-sm">
+          {model.name} features an open / half-in-ear acoustic design and does not feature active noise cancellation.
         </p>
       </div>
     );
   }
 
-  const isAncOn = ancMode === 'low' || ancMode === 'mid' || ancMode === 'high' || ancMode === 'adaptive';
+  const isAncActive = ancMode === 'high' || ancMode === 'mid' || ancMode === 'low' || ancMode === 'adaptive';
 
-  const handleAncOnClick = () => {
-    onSetAncMode(lastAncLevel);
-  };
-
-  const handleIntensityClick = (level: 'high' | 'mid' | 'low' | 'adaptive') => {
-    setLastAncLevel(level);
-    onSetAncMode(level);
+  const handleStartFitTest = () => {
+    setFitTestStep('testing');
+    setTimeout(() => {
+      setFitTestStep('result');
+    }, 2400);
   };
 
   return (
-    <div className="bg-[#111111] rounded-2xl border border-white/6 p-6 md:p-8 flex flex-col gap-8">
-      {/* Header */}
+    <div className="p-5 sm:p-7 rounded-2xl theme-card flex flex-col gap-6 shadow-xl transition-colors duration-300">
+      {/* Title */}
       <div className="flex items-center justify-between">
-        <h2 className="font-ndot text-2xl text-white tracking-wider uppercase">Noise Control</h2>
-        {model.maxAncDb && (
-          <div className="px-3 py-1 bg-white/5 rounded-full border border-white/6 flex items-center gap-2">
-            <Radio size={14} className="text-[#d71920]" />
-            <span className="font-mono text-xs text-white/70">Up to {model.maxAncDb}dB</span>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="glyph-dot" />
+          <h2 className="font-ndot text-xl text-[var(--text-main)] tracking-wider uppercase">NOISE CONTROL</h2>
+        </div>
+        {model.hasEarFitTest && (
+          <button
+            onClick={() => {
+              setFitTestStep('intro');
+              setShowFitTest(true);
+            }}
+            className="text-xs font-mono px-3 py-1 rounded-lg border border-[var(--border-dim)] bg-[var(--bg-surface-elevated)] hover:border-[var(--border-bright)] text-[var(--text-sub)] hover:text-[var(--text-main)] transition"
+          >
+            Ear Tip Fit Test
+          </button>
         )}
       </div>
 
-      {/* Main Switcher */}
-      <div className="bg-[#161616] p-1.5 rounded-2xl border border-white/6 flex gap-2">
+      {/* Main 3 Modes: Noise Cancellation, Transparency, Off */}
+      <div className="grid grid-cols-3 gap-2 p-1.5 rounded-xl border border-[var(--border-dim)] bg-[var(--bg-app)]/50">
+        {/* Noise Cancellation */}
         <button
-          onClick={handleAncOnClick}
-          className={`flex-1 flex flex-col items-center justify-center gap-2 py-4 rounded-xl transition-all duration-300 ${
-            isAncOn ? 'bg-[#d71920] text-white shadow-lg' : 'hover:bg-white/5 text-white/50'
+          onClick={() => onSetAncMode(lastAncLevel)}
+          className={`flex flex-col items-center gap-2 py-4 px-2 rounded-lg transition-all ${
+            isAncActive
+              ? 'bg-[var(--text-main)] text-[var(--bg-app)] font-semibold shadow-lg'
+              : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--border-dim)]'
           }`}
         >
-          <VolumeX size={24} className={isAncOn ? 'text-white' : ''} />
-          <span className="font-mono text-xs uppercase tracking-widest font-medium">Cancellation</span>
+          <div className="w-8 h-8 flex items-center justify-center">
+            <VolumeX className="w-5 h-5" />
+          </div>
+          <span className="text-xs font-mono tracking-wider uppercase text-center">
+            Cancellation
+          </span>
         </button>
 
+        {/* Transparency */}
         <button
           onClick={() => onSetAncMode('transparency')}
-          className={`flex-1 flex flex-col items-center justify-center gap-2 py-4 rounded-xl transition-all duration-300 ${
-            ancMode === 'transparency' ? 'bg-white text-black shadow-lg' : 'hover:bg-white/5 text-white/50'
+          className={`flex flex-col items-center gap-2 py-4 px-2 rounded-lg transition-all ${
+            ancMode === 'transparency'
+              ? 'bg-[var(--text-main)] text-[var(--bg-app)] font-semibold shadow-lg'
+              : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--border-dim)]'
           }`}
         >
-          <Volume2 size={24} className={ancMode === 'transparency' ? 'text-black' : ''} />
-          <span className="font-mono text-xs uppercase tracking-widest font-medium">Transparency</span>
+          <div className="w-8 h-8 flex items-center justify-center">
+            <Radio className="w-5 h-5" />
+          </div>
+          <span className="text-xs font-mono tracking-wider uppercase text-center">
+            Transparency
+          </span>
         </button>
 
+        {/* Off */}
         <button
           onClick={() => onSetAncMode('off')}
-          className={`flex-1 flex flex-col items-center justify-center gap-2 py-4 rounded-xl transition-all duration-300 ${
-            ancMode === 'off' ? 'bg-[#222222] text-white shadow-lg border border-white/10' : 'hover:bg-white/5 text-white/50'
+          className={`flex flex-col items-center gap-2 py-4 px-2 rounded-lg transition-all ${
+            ancMode === 'off'
+              ? 'bg-[var(--text-main)] text-[var(--bg-app)] font-semibold shadow-lg'
+              : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--border-dim)]'
           }`}
         >
-          <Radio size={24} className={ancMode === 'off' ? 'text-white' : ''} />
-          <span className="font-mono text-xs uppercase tracking-widest font-medium">Off</span>
+          <div className="w-8 h-8 flex items-center justify-center">
+            <Volume2 className="w-5 h-5" />
+          </div>
+          <span className="text-xs font-mono tracking-wider uppercase text-center">
+            Off
+          </span>
         </button>
       </div>
 
-      {/* Intensity Selector */}
-      {isAncOn && (
-        <div className="animate-in fade-in slide-in-from-top-4 duration-300">
-          <h3 className="font-mono text-xs text-white/40 uppercase mb-3 px-1">Intensity</h3>
-          <div className="flex gap-2">
+      {/* ANC Intensity Sub-Selector (Visible when Cancellation is active) */}
+      {isAncActive && (
+        <div className="flex flex-col gap-3 p-4 rounded-xl border border-[var(--border-dim)] bg-[var(--bg-surface-elevated)] animate-in fade-in duration-200">
+          <div className="flex items-center justify-between text-xs font-mono text-[var(--text-sub)]">
+            <span>INTENSITY LEVEL</span>
+            <span className="text-[var(--accent-color)] uppercase font-bold">{ancMode}</span>
+          </div>
+
+          <div className="grid grid-cols-4 gap-2">
             {(['high', 'mid', 'low', 'adaptive'] as const).map((level) => (
               <button
                 key={level}
-                onClick={() => handleIntensityClick(level)}
-                className={`flex-1 py-3 px-2 rounded-xl text-center font-mono text-xs transition-all duration-200 border ${
+                onClick={() => {
+                  setLastAncLevel(level);
+                  onSetAncMode(level);
+                }}
+                className={`py-2 px-1 text-center text-xs font-mono rounded-lg border transition ${
                   ancMode === level
-                    ? 'bg-white/10 border-white/20 text-white'
-                    : 'bg-transparent border-white/6 text-white/40 hover:bg-white/5 hover:text-white/70'
+                    ? 'border-[var(--accent-color)] bg-[var(--accent-color)]/15 text-[var(--text-main)] font-semibold'
+                    : 'border-[var(--border-dim)] text-[var(--text-sub)] hover:border-[var(--border-bright)] hover:text-[var(--text-main)]'
                 }`}
               >
                 {level.toUpperCase()}
@@ -111,78 +146,108 @@ export const AncStudio: React.FC<AncStudioProps> = ({
         </div>
       )}
 
-      {/* Features */}
-      {(model.hasPersonalizedAnc || model.hasEarFitTest) && (
-        <div className="flex flex-col gap-3 pt-4 border-t border-white/6">
-          {model.hasPersonalizedAnc && (
-            <div className="flex items-center justify-between p-4 bg-[#161616] rounded-xl border border-white/6">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${personalizedAnc ? 'bg-[#d71920]/20 text-[#d71920]' : 'bg-white/5 text-white/40'}`}>
-                  <Sparkles size={18} />
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-sans text-sm text-white font-medium">Personalized ANC</span>
-                  <span className="font-mono text-xs text-white/40">Adapts to your ear canal</span>
-                </div>
-              </div>
-              <button
-                onClick={() => onSetPersonalizedAnc(!personalizedAnc)}
-                className={`w-12 h-6 rounded-full transition-colors duration-300 relative ${
-                  personalizedAnc ? 'bg-[#d71920]' : 'bg-white/10'
-                }`}
-              >
-                <div
-                  className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform duration-300 ${
-                    personalizedAnc ? 'left-7' : 'left-1'
-                  }`}
-                />
-              </button>
+      {/* Personalized ANC Toggle */}
+      {model.hasPersonalizedAnc && isAncActive && (
+        <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--border-dim)] bg-[var(--bg-surface-elevated)]">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[var(--accent-color)]" />
+              <span className="text-xs font-mono text-[var(--text-main)] font-medium uppercase">
+                Personalized ANC
+              </span>
             </div>
-          )}
+            <span className="text-[11px] font-mono text-[var(--text-sub)] mt-0.5">
+              Adapts cancellation curve to your ear canal geometry in real time
+            </span>
+          </div>
 
-          {model.hasEarFitTest && (
-            <button
-              onClick={() => setShowFitTest(true)}
-              className="flex items-center justify-between p-4 bg-[#161616] hover:bg-white/5 rounded-xl border border-white/6 transition-colors duration-200"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-white/5 text-white/60">
-                  <CheckCircle2 size={18} />
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="font-sans text-sm text-white font-medium">Ear Tip Fit Test</span>
-                  <span className="font-mono text-xs text-white/40">Check seal for optimal sound</span>
-                </div>
-              </div>
-            </button>
-          )}
+          <button
+            onClick={() => onSetPersonalizedAnc(!personalizedAnc)}
+            className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 ${
+              personalizedAnc ? 'bg-[var(--accent-color)]' : 'bg-[var(--border-bright)]'
+            }`}
+          >
+            <div
+              className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                personalizedAnc ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
         </div>
       )}
 
-      {/* Fit Test Modal */}
+      {/* Ear Tip Fit Test Modal */}
       {showFitTest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-[#111111] border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl relative">
-            <div className="absolute top-0 right-0 p-4">
-              <button onClick={() => setShowFitTest(false)} className="text-white/40 hover:text-white transition-colors text-2xl leading-none">
-                &times;
-              </button>
-            </div>
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-2">
-                <ShieldAlert size={32} className="text-white" />
-              </div>
-              <h3 className="font-ndot text-2xl text-white">FIT TEST</h3>
-              <p className="text-white/60 text-sm mb-6">
-                Place both earbuds in your ears. The test will play a short tone to check the acoustic seal.
-              </p>
-              <button 
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl theme-card-elevated p-6 shadow-2xl flex flex-col gap-5">
+            <div className="flex items-center justify-between border-b border-[var(--border-dim)] pb-3">
+              <h3 className="font-ndot text-lg text-[var(--text-main)]">EAR TIP FIT TEST</h3>
+              <button
                 onClick={() => setShowFitTest(false)}
-                className="w-full py-4 bg-white text-black font-mono text-sm uppercase tracking-widest hover:bg-gray-200 transition-colors rounded-xl"
+                className="text-[var(--text-sub)] hover:text-[var(--text-main)] font-mono text-sm"
               >
-                Start Test
+                ✕
               </button>
             </div>
+
+            {fitTestStep === 'intro' && (
+              <div className="flex flex-col items-center text-center gap-4 py-3">
+                <img
+                  src="/assets/ear_stick_test_introduce.webp"
+                  alt="Fit Test"
+                  className="w-36 h-36 object-contain opacity-90"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+                <p className="text-xs font-mono text-[var(--text-sub)]">
+                  Place both earbuds securely in your ears and stay in a quiet environment. A calibration chime will test acoustic seal.
+                </p>
+                <button
+                  onClick={handleStartFitTest}
+                  className="w-full py-2.5 rounded-xl bg-[var(--text-main)] text-[var(--bg-app)] font-mono font-medium text-xs hover:opacity-90 transition"
+                >
+                  START TEST
+                </button>
+              </div>
+            )}
+
+            {fitTestStep === 'testing' && (
+              <div className="flex flex-col items-center text-center gap-4 py-8">
+                <div className="w-16 h-16 rounded-full border-2 border-[var(--accent-color)] border-t-transparent animate-spin" />
+                <span className="font-ndot text-sm tracking-wider text-[var(--text-main)]">
+                  ANALYZING ACOUSTIC SEAL...
+                </span>
+                <span className="text-xs font-mono text-[var(--text-sub)]">
+                  Measuring internal ear canal reflection
+                </span>
+              </div>
+            )}
+
+            {fitTestStep === 'result' && (
+              <div className="flex flex-col gap-4 py-2">
+                <div className="flex items-center justify-around p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                  <div className="flex flex-col items-center gap-1">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                    <span className="text-xs font-mono text-emerald-300">LEFT: GOOD SEAL</span>
+                  </div>
+                  <div className="w-px h-10 bg-[var(--border-dim)]" />
+                  <div className="flex flex-col items-center gap-1">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                    <span className="text-xs font-mono text-emerald-300">RIGHT: GOOD SEAL</span>
+                  </div>
+                </div>
+                <p className="text-xs font-mono text-[var(--text-sub)] text-center">
+                  Your ear tips are creating an optimal seal for maximum noise cancellation and rich bass response.
+                </p>
+                <button
+                  onClick={() => setShowFitTest(false)}
+                  className="w-full py-2.5 rounded-xl bg-[var(--accent-color)] text-white font-mono font-medium text-xs hover:opacity-90 transition"
+                >
+                  DONE
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

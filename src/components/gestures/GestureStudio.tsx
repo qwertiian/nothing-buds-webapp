@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { GestureConfig, GestureAction, EarbudModel } from '../../models/types';
-import { MousePointerClick, Touchpad } from 'lucide-react';
 
 interface GestureStudioProps {
   gestures: {
@@ -18,89 +17,83 @@ const ACTION_OPTIONS: { id: GestureAction; label: string }[] = [
   { id: 'voice_assistant', label: 'Voice Assistant' },
   { id: 'volume_up', label: 'Volume Up' },
   { id: 'volume_down', label: 'Volume Down' },
-  { id: 'anc_cycle', label: 'Noise Control' },
-  { id: 'none', label: 'None' },
+  { id: 'anc_cycle', label: 'Noise Control Toggle' },
+  { id: 'none', label: 'None (Disabled)' },
 ];
 
 export const GestureStudio: React.FC<GestureStudioProps> = ({
   gestures,
   onSetGesture,
-  model,
 }) => {
   const [selectedEar, setSelectedEar] = useState<'left' | 'right'>('left');
 
   const triggers: { id: keyof GestureConfig; label: string; desc: string }[] = [
-    { id: 'singleTap', label: 'Single Tap', desc: 'Quick press on the stem' },
-    { id: 'doubleTap', label: 'Double Tap', desc: 'Two consecutive presses' },
-    { id: 'tripleTap', label: 'Triple Tap', desc: 'Three consecutive presses' },
-    { id: 'tapAndHold', label: 'Tap & Hold', desc: 'Press and hold' },
-    { id: 'doubleTapAndHold', label: 'Double Tap & Hold', desc: 'Double tap, hold the second' },
+    { id: 'singleTap', label: 'Single Tap / Pinch', desc: 'Default action when single tapped' },
+    { id: 'doubleTap', label: 'Double Tap / Pinch', desc: 'Quick double tap on the stem' },
+    { id: 'tripleTap', label: 'Triple Tap / Pinch', desc: 'Rapid triple tap sequence' },
+    { id: 'tapAndHold', label: 'Tap & Hold / Pinch & Hold', desc: 'Press and hold down stem sensor' },
+    { id: 'doubleTapAndHold', label: 'Double Tap & Hold', desc: 'Double tap with prolonged hold' },
   ];
 
   const currentConfig = gestures[selectedEar];
 
   return (
-    <div className="p-6 sm:p-8 rounded-2xl border border-white/6 bg-[#111111] flex flex-col gap-8 shadow-none">
+    <div className="p-5 sm:p-7 rounded-2xl theme-card flex flex-col gap-6 shadow-xl transition-colors duration-300">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-nothing-red" />
-          <h2 className="font-ndot text-2xl text-white tracking-widest uppercase">GESTURES</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="glyph-dot" />
+          <h2 className="font-ndot text-xl text-[var(--text-main)] tracking-wider uppercase">GESTURES & CONTROLS</h2>
         </div>
 
         {/* Ear Switcher */}
-        <div className="flex items-center gap-2 p-1.5 rounded-full border border-white/6 bg-[#161616]">
+        <div className="flex items-center gap-1 p-1 rounded-xl border border-[var(--border-dim)] bg-[var(--bg-app)]/60">
           <button
             onClick={() => setSelectedEar('left')}
-            className={`px-6 py-2 text-xs font-mono rounded-full transition-all duration-200 ${
-              selectedEar === 'left' ? 'bg-white/10 text-white' : 'text-neutral-500 hover:text-white'
+            className={`px-4 py-1.5 text-xs font-mono rounded-lg transition ${
+              selectedEar === 'left' ? 'bg-[var(--text-main)] text-[var(--bg-app)] font-semibold' : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
             }`}
           >
-            LEFT
+            Left Bud
           </button>
           <button
             onClick={() => setSelectedEar('right')}
-            className={`px-6 py-2 text-xs font-mono rounded-full transition-all duration-200 ${
-              selectedEar === 'right' ? 'bg-white/10 text-white' : 'text-neutral-500 hover:text-white'
+            className={`px-4 py-1.5 text-xs font-mono rounded-lg transition ${
+              selectedEar === 'right' ? 'bg-[var(--text-main)] text-[var(--bg-app)] font-semibold' : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
             }`}
           >
-            RIGHT
+            Right Bud
           </button>
         </div>
       </div>
 
       {/* Controls List */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2.5">
         {triggers.map((trigger) => (
           <div
             key={trigger.id}
-            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-white/6 bg-[#161616] hover:bg-[#1a1a1a] transition-all duration-200"
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 rounded-xl border border-[var(--border-dim)] bg-[var(--bg-surface-elevated)] hover:border-[var(--border-bright)] transition"
           >
             <div className="flex flex-col">
-              <span className="text-xs font-mono text-white tracking-widest uppercase">
+              <span className="text-xs font-mono text-[var(--text-main)] font-medium">
                 {trigger.label}
               </span>
-              <span className="text-[11px] font-sans text-neutral-500 mt-1">
+              <span className="text-[11px] font-mono text-[var(--text-sub)]">
                 {trigger.desc}
               </span>
             </div>
 
-            <div className="relative">
-              <select
-                value={currentConfig[trigger.id]}
-                onChange={(e) => onSetGesture(selectedEar, trigger.id, e.target.value as GestureAction)}
-                className="appearance-none bg-transparent text-xs font-mono text-white border border-white/10 rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:border-white/30 transition-colors cursor-pointer w-full sm:w-48"
-              >
-                {ACTION_OPTIONS.map((opt) => (
-                  <option key={opt.id} value={opt.id} className="bg-[#1a1a1a] text-white">
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <MousePointerClick className="w-3.5 h-3.5 text-neutral-500" />
-              </div>
-            </div>
+            <select
+              value={currentConfig[trigger.id]}
+              onChange={(e) => onSetGesture(selectedEar, trigger.id, e.target.value as GestureAction)}
+              className="bg-[var(--bg-app)] text-xs font-mono text-[var(--text-main)] border border-[var(--border-dim)] rounded-lg px-3 py-1.5 focus:outline-none focus:border-[var(--accent-color)] transition cursor-pointer self-start sm:self-auto"
+            >
+              {ACTION_OPTIONS.map((opt) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
         ))}
       </div>

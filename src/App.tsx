@@ -9,18 +9,16 @@ import { GestureStudio } from './components/gestures/GestureStudio';
 import { DeviceSettings } from './components/settings/DeviceSettings';
 import { PokemonCompanion } from './components/themes/PokemonCompanion';
 import { BluetoothModal } from './components/connection/BluetoothModal';
-import { Sliders, Volume2, Gamepad2, Sparkles, Settings, Github, ExternalLink } from 'lucide-react';
+import { Sliders, Volume2, Gamepad2, Sparkles, Settings, Github, ExternalLink, Bluetooth } from 'lucide-react';
 
 export function App() {
   const {
     state,
     theme,
-    isSimulator,
     error,
     changeTheme,
     connectBluetooth,
     disconnectBluetooth,
-    toggleSimulator,
     setModel,
     setAncMode,
     setPersonalizedAnc,
@@ -38,13 +36,11 @@ export function App() {
   const [showConnectModal, setShowConnectModal] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#f5f5f5] flex flex-col selection:bg-nothing-red selection:text-white relative font-sans">
-      {/* Top Navigation */}
+    <div className="min-h-screen bg-[var(--bg-app)] text-[var(--text-main)] flex flex-col selection:bg-[var(--accent-color)] selection:text-white relative transition-colors duration-300">
+      {/* Top Navigation Bar */}
       <Navbar
         theme={theme}
         onThemeChange={changeTheme}
-        isSimulator={isSimulator}
-        onToggleSimulator={toggleSimulator}
         isConnected={state.connected}
         isConnecting={state.isConnecting}
         onConnect={() => setShowConnectModal(true)}
@@ -54,85 +50,112 @@ export function App() {
         error={error}
       />
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col gap-5 sm:gap-6">
-        {/* Top Hero: Device Showcase */}
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 flex flex-col gap-5">
+        {/* Device Not Connected Banner */}
+        {!state.connected && (
+          <div className="w-full p-4 sm:p-5 rounded-2xl theme-card border-dashed flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[var(--border-dim)] flex items-center justify-center text-[var(--accent-color)] shrink-0">
+                <Bluetooth size={20} />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-mono text-xs sm:text-sm font-semibold text-[var(--text-main)]">
+                  Connect your Nothing or CMF Earbuds
+                </span>
+                <span className="text-[11px] font-mono text-[var(--text-sub)]">
+                  Pair your buds in Windows / macOS Bluetooth settings, then click connect to sync ANC, EQ & battery.
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowConnectModal(true)}
+              disabled={state.isConnecting}
+              className="px-5 py-2.5 rounded-xl bg-[var(--accent-color)] hover:opacity-90 text-white font-mono text-xs font-semibold shadow-lg transition whitespace-nowrap"
+            >
+              {state.isConnecting ? 'Searching...' : 'Connect Buds Now'}
+            </button>
+          </div>
+        )}
+
+        {/* Device Showcase (Interactive 3D Renders) */}
         <DeviceShowcase
           model={state.model}
           serialNumber={state.serialNumber}
           firmwareVersion={state.firmwareVersion}
           onSelectModel={setModel}
-          isSimulator={isSimulator}
+          isConnected={state.connected}
         />
 
         {/* Battery Gauges */}
         <BatteryCard battery={state.battery} />
 
-        {/* Studio Navigation Pills */}
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl border border-white/6 bg-[#111111] overflow-x-auto hide-scrollbar">
+        {/* Studio Navigation Tabs */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-xl border border-[var(--border-dim)] bg-[var(--bg-surface)] overflow-x-auto">
           <button
             onClick={() => setActiveTab('controls')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-mono transition-all duration-200 whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition whitespace-nowrap ${
               activeTab === 'controls'
-                ? 'bg-white/10 text-white border-l-2 border-nothing-red shadow-sm'
-                : 'text-white/50 hover:bg-white/5 hover:text-white'
+                ? 'bg-[var(--text-main)] text-[var(--bg-app)] font-bold shadow'
+                : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--border-dim)]'
             }`}
           >
-            <Volume2 className="w-4 h-4" />
+            <Volume2 className="w-3.5 h-3.5" />
             <span>Noise Control</span>
           </button>
 
           <button
             onClick={() => setActiveTab('eq')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-mono transition-all duration-200 whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition whitespace-nowrap ${
               activeTab === 'eq'
-                ? 'bg-white/10 text-white border-l-2 border-nothing-red shadow-sm'
-                : 'text-white/50 hover:bg-white/5 hover:text-white'
+                ? 'bg-[var(--text-main)] text-[var(--bg-app)] font-bold shadow'
+                : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--border-dim)]'
             }`}
           >
-            <Sliders className="w-4 h-4" />
+            <Sliders className="w-3.5 h-3.5" />
             <span>Equalizer</span>
           </button>
 
           <button
             onClick={() => setActiveTab('gestures')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-mono transition-all duration-200 whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition whitespace-nowrap ${
               activeTab === 'gestures'
-                ? 'bg-white/10 text-white border-l-2 border-nothing-red shadow-sm'
-                : 'text-white/50 hover:bg-white/5 hover:text-white'
+                ? 'bg-[var(--text-main)] text-[var(--bg-app)] font-bold shadow'
+                : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--border-dim)]'
             }`}
           >
-            <Gamepad2 className="w-4 h-4" />
+            <Gamepad2 className="w-3.5 h-3.5" />
             <span>Gestures</span>
           </button>
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-mono transition-all duration-200 whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition whitespace-nowrap ${
               activeTab === 'settings'
-                ? 'bg-white/10 text-white border-l-2 border-nothing-red shadow-sm'
-                : 'text-white/50 hover:bg-white/5 hover:text-white'
+                ? 'bg-[var(--text-main)] text-[var(--bg-app)] font-bold shadow'
+                : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--border-dim)]'
             }`}
           >
-            <Settings className="w-4 h-4" />
-            <span>Settings</span>
+            <Settings className="w-3.5 h-3.5" />
+            <span>Device Settings</span>
           </button>
 
           <button
             onClick={() => setActiveTab('pokemon')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-mono transition-all duration-200 whitespace-nowrap ml-auto ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition whitespace-nowrap ml-auto ${
               activeTab === 'pokemon'
-                ? 'bg-white/10 text-white border-l-2 border-nothing-red shadow-sm'
-                : 'text-white/50 hover:bg-white/5 hover:text-white'
+                ? 'bg-[var(--accent-color)] text-white font-bold shadow'
+                : 'text-[var(--accent-color)] hover:bg-[var(--accent-color)]/10'
             }`}
           >
-            <Sparkles className="w-4 h-4" />
-            <span>Pokédex</span>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Pokédex Archive</span>
           </button>
         </div>
 
-        {/* Tab Content Display */}
-        <div className="w-full transition-all duration-200">
+        {/* Tab Content Panels */}
+        <div className="w-full">
           {activeTab === 'controls' && (
             <AncStudio
               ancMode={state.ancMode}
@@ -183,18 +206,26 @@ export function App() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t border-white/6 py-4 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs font-mono text-neutral-500">
-          <span>NOTHING OS DESKTOP COMPANION</span>
-          <a
-            href="https://github.com/qwertiian/nothing-buds-webapp"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-white transition-all duration-200"
-          >
-            <Github className="w-3.5 h-3.5" />
-            <span>GITHUB</span>
-          </a>
+      <footer className="w-full border-t border-[var(--border-dim)] bg-[var(--bg-app)] py-5 mt-10 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[var(--text-sub)]">
+          <div className="flex items-center gap-2">
+            <span className="font-ndot text-sm text-[var(--text-main)]">EAR (OS)</span>
+            <span>—</span>
+            <span>Desktop & Web Companion for Nothing & CMF Buds</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <a
+              href="https://github.com/qwertiian/nothing-buds-webapp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:text-[var(--text-main)] transition"
+            >
+              <Github className="w-3.5 h-3.5" />
+              <span>GitHub</span>
+              <ExternalLink className="w-3 h-3 opacity-50" />
+            </a>
+          </div>
         </div>
       </footer>
 
@@ -208,7 +239,6 @@ export function App() {
         }}
         isConnecting={state.isConnecting}
         error={error}
-        onUseSimulator={() => toggleSimulator(true)}
       />
     </div>
   );

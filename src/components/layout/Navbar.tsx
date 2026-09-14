@@ -1,13 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AppTheme, EarbudModel } from '../../models/types';
 import { SUPPORTED_DEVICES } from '../../models/devices';
-import { Bluetooth, Sparkles, Sliders, RefreshCw, AlertCircle, Zap, ChevronDown, X, Palette, Check } from 'lucide-react';
+import { Bluetooth, RefreshCw, AlertCircle, ChevronDown, X, Palette, Check } from 'lucide-react';
 
 interface NavbarProps {
   theme: AppTheme;
   onThemeChange: (theme: AppTheme) => void;
-  isSimulator: boolean;
-  onToggleSimulator: (sim: boolean) => void;
   isConnected: boolean;
   isConnecting: boolean;
   onConnect: () => void;
@@ -20,15 +18,13 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   theme,
   onThemeChange,
-  isSimulator,
-  onToggleSimulator,
   isConnected,
   isConnecting,
   onConnect,
   onDisconnect,
   activeModel,
   onSelectModel,
-  error
+  error,
 }) => {
   const [themeOpen, setThemeOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
@@ -50,59 +46,64 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const themeOptions: { id: AppTheme; label: string; dotColor: string }[] = [
-    { id: 'nothing-dark', label: 'Nothing Dark', dotColor: 'bg-[#d71920]' },
-    { id: 'pokemon-pokedex', label: 'Pokédex 8-Bit', dotColor: 'bg-[#8bac0f]' },
-    { id: 'cyberpunk-neon', label: 'Cyberpunk Neon', dotColor: 'bg-[#00f0ff]' },
-    { id: 'lofi-vibes', label: 'Lofi Vibes', dotColor: 'bg-[#c4a882]' },
+  const themeOptions: { id: AppTheme; label: string; dotBg: string }[] = [
+    { id: 'nothing-dark', label: 'Nothing Dark', dotBg: 'bg-[#d71920]' },
+    { id: 'pokemon-pokedex', label: 'Pokédex 8-Bit', dotBg: 'bg-[#8bac0f]' },
+    { id: 'cyberpunk-neon', label: 'Cyberpunk Neon', dotBg: 'bg-[#00f0ff]' },
+    { id: 'lofi-vibes', label: 'Lofi Vibes', dotBg: 'bg-[#e07a5f]' },
   ];
 
   return (
     <>
       {error && (
-        <div className="bg-[#d71920]/10 border-b border-[#d71920]/20 px-4 py-3 flex items-center justify-center gap-3">
-          <AlertCircle size={16} className="text-[#d71920]" />
-          <span className="text-sm font-mono text-[#d71920]">{error}</span>
+        <div className="bg-[#d71920]/15 border-b border-[#d71920]/30 px-4 py-2.5 flex items-center justify-center gap-3 transition-all">
+          <AlertCircle size={15} className="text-[#d71920]" />
+          <span className="text-xs font-mono text-[#d71920]">{error}</span>
         </div>
       )}
       
-      <nav className="h-16 border-b border-white/6 bg-[#0a0a0a]/80 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-40">
-        {/* Brand */}
+      <nav className="h-16 border-b border-[var(--border-dim)] bg-[var(--bg-app)]/90 backdrop-blur-xl px-4 sm:px-8 flex items-center justify-between sticky top-0 z-40 transition-colors duration-300">
+        {/* Brand & Model Selector */}
         <div className="flex items-center gap-4">
-          <div className="font-ndot text-2xl tracking-widest text-white mt-1">NOTHING</div>
-          <div className="h-4 w-[1px] bg-white/20" />
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--accent-color)] shadow-[0_0_8px_var(--accent-color)]" />
+            <span className="font-ndot text-xl tracking-widest text-[var(--text-main)]">NOTHING</span>
+            <span className="font-ndot text-xs px-1.5 py-0.5 rounded border border-[var(--border-dim)] text-[var(--text-sub)]">
+              EAR(OS)
+            </span>
+          </div>
+
+          <div className="h-4 w-[1px] bg-[var(--border-dim)]" />
           
           <div className="relative" ref={modelRef}>
             <button
               onClick={() => setModelOpen(!modelOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors group"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[var(--border-dim)] transition-colors group"
             >
-              <span className="font-mono text-sm text-white/80 group-hover:text-white transition-colors">
+              <span className="font-mono text-xs font-medium text-[var(--text-main)]">
                 {activeModel.name}
               </span>
-              <ChevronDown size={14} className={`text-white/40 transition-transform duration-300 ${modelOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown size={13} className={`text-[var(--text-sub)] transition-transform duration-200 ${modelOpen ? 'rotate-180' : ''}`} />
             </button>
             
             {modelOpen && (
-              <div className="absolute top-full left-0 mt-2 w-52 bg-[#111111] border border-white/10 rounded-xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 z-50">
-                {SUPPORTED_DEVICES.map(model => (
+              <div className="absolute top-full left-0 mt-2 w-56 max-h-80 overflow-y-auto bg-[var(--bg-surface)] border border-[var(--border-bright)] rounded-xl shadow-2xl z-50 p-1">
+                {SUPPORTED_DEVICES.map(m => (
                   <button
-                    key={model.id}
+                    key={m.id}
                     onClick={() => {
-                      onSelectModel(model);
+                      onSelectModel(m);
                       setModelOpen(false);
                     }}
-                    className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-white/5 transition-colors"
+                    className={`w-full px-3 py-2.5 text-left flex items-center justify-between rounded-lg transition-colors ${
+                      activeModel.id === m.id ? 'bg-[var(--border-dim)] text-[var(--text-main)]' : 'text-[var(--text-sub)] hover:bg-[var(--border-dim)] hover:text-[var(--text-main)]'
+                    }`}
                   >
                     <div className="flex flex-col">
-                      <span className={`font-mono text-xs ${activeModel.id === model.id ? 'text-white font-semibold' : 'text-white/60'}`}>
-                        {model.name}
-                      </span>
-                      <span className="text-[10px] font-mono text-white/30 uppercase">
-                        {model.codename}
-                      </span>
+                      <span className="font-mono text-xs font-medium">{m.name}</span>
+                      <span className="text-[10px] font-mono opacity-50 uppercase">{m.codename}</span>
                     </div>
-                    {activeModel.id === model.id && <Check size={14} className="text-[#d71920]" />}
+                    {activeModel.id === m.id && <Check size={14} className="text-[var(--accent-color)]" />}
                   </button>
                 ))}
               </div>
@@ -112,34 +113,22 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          {/* Simulator Toggle */}
-          <button
-            onClick={() => onToggleSimulator(!isSimulator)}
-            title={isSimulator ? "Switch to real Bluetooth hardware" : "Switch to Virtual Simulator"}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 font-mono text-xs uppercase tracking-wider ${
-              isSimulator 
-                ? 'bg-[#d71920]/10 border-[#d71920]/20 text-[#d71920]' 
-                : 'bg-transparent border-white/6 text-white/40 hover:bg-white/5 hover:text-white/70'
-            }`}
-          >
-            <Sparkles size={14} />
-            <span>Sim Mode</span>
-          </button>
-
           {/* Theme Dropdown */}
           <div className="relative" ref={themeRef}>
             <button
               onClick={() => setThemeOpen(!themeOpen)}
               title="Change Theme"
-              className={`p-2.5 rounded-xl border transition-all duration-300 flex items-center gap-2 ${
-                themeOpen ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/6 text-white/40 hover:bg-white/5 hover:text-white/70'
+              className={`p-2 rounded-xl border transition-all duration-200 flex items-center gap-2 ${
+                themeOpen 
+                  ? 'bg-[var(--border-dim)] border-[var(--border-bright)] text-[var(--text-main)]' 
+                  : 'bg-transparent border-[var(--border-dim)] text-[var(--text-sub)] hover:border-[var(--border-bright)] hover:text-[var(--text-main)]'
               }`}
             >
-              <Palette size={16} />
+              <Palette size={15} />
             </button>
             
             {themeOpen && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-[#111111] border border-white/10 rounded-xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 z-50 p-1">
+              <div className="absolute top-full right-0 mt-2 w-48 bg-[var(--bg-surface)] border border-[var(--border-bright)] rounded-xl shadow-2xl z-50 p-1">
                 {themeOptions.map(t => (
                   <button
                     key={t.id}
@@ -147,41 +136,49 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onThemeChange(t.id);
                       setThemeOpen(false);
                     }}
-                    className={`w-full px-3 py-2.5 text-left flex items-center justify-between rounded-lg transition-colors ${
-                      theme === t.id ? 'bg-white/10 text-white font-medium' : 'text-white/60 hover:bg-white/5 hover:text-white'
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between rounded-lg transition-colors ${
+                      theme === t.id ? 'bg-[var(--border-dim)] text-[var(--text-main)] font-medium' : 'text-[var(--text-sub)] hover:bg-[var(--border-dim)] hover:text-[var(--text-main)]'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className={`w-2 h-2 rounded-full ${t.dotColor}`} />
+                      <span className={`w-2 h-2 rounded-full ${t.dotBg}`} />
                       <span className="font-mono text-xs">{t.label}</span>
                     </div>
-                    {theme === t.id && <Check size={14} className="text-[#d71920]" />}
+                    {theme === t.id && <Check size={14} className="text-[var(--accent-color)]" />}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="w-[1px] h-6 bg-white/10 mx-1" />
+          <div className="w-[1px] h-5 bg-[var(--border-dim)]" />
 
           {/* Connect Button */}
           <button
             onClick={isConnected ? onDisconnect : onConnect}
             disabled={isConnecting}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 font-mono text-xs uppercase tracking-wider disabled:opacity-50 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 font-mono text-xs uppercase tracking-wider disabled:opacity-50 ${
               isConnected
-                ? 'bg-white/10 text-white hover:bg-[#d71920]/20 hover:text-[#d71920] border border-white/10 hover:border-[#d71920]/30'
-                : 'bg-white text-black hover:bg-white/90 shadow-lg shadow-white/5'
+                ? 'bg-transparent border border-[var(--border-dim)] hover:border-red-500/50 text-[var(--text-sub)] hover:text-red-400'
+                : 'bg-[var(--text-main)] text-[var(--bg-app)] hover:opacity-90 font-semibold shadow-lg'
             }`}
           >
             {isConnecting ? (
-              <RefreshCw size={14} className="animate-spin" />
+              <>
+                <RefreshCw size={13} className="animate-spin" />
+                <span>Connecting...</span>
+              </>
             ) : isConnected ? (
-              <X size={14} />
+              <>
+                <X size={13} />
+                <span>Disconnect</span>
+              </>
             ) : (
-              <Bluetooth size={14} />
+              <>
+                <Bluetooth size={13} />
+                <span>Connect Buds</span>
+              </>
             )}
-            <span>{isConnecting ? 'Connecting' : isConnected ? 'Disconnect' : 'Connect'}</span>
           </button>
         </div>
       </nav>

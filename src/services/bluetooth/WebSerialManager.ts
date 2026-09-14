@@ -15,6 +15,8 @@ import {
 import { EarbudModel, EarbudState, AncMode, EqPreset, CustomEqSettings } from '../../models/types';
 import { SUPPORTED_DEVICES, findModelBySku } from '../../models/devices';
 
+const SPP_UUID = 'aeac4a03-dff5-498f-843a-34487cf133eb';
+
 export class WebSerialManager {
   private port: any = null;
   private reader: any = null;
@@ -89,6 +91,7 @@ export class WebSerialManager {
 
   public async tryAutoConnect(): Promise<boolean> {
     if (!this.isSupported()) return false;
+    if (this.state.connected && this.port) return true;
     
     try {
       const serial = (navigator as any).serial;
@@ -114,7 +117,6 @@ export class WebSerialManager {
       this.state.isConnecting = false;
       this.port = null;
       this.notify();
-      console.warn('Auto-connect failed', err);
     }
     
     return false;
@@ -125,22 +127,21 @@ export class WebSerialManager {
       throw new Error('Web Serial API is not supported in this browser. Please use Chrome, Edge, Brave, or Opera.');
     }
 
+    // Attempt auto-connect to pre-authorized port first
     const autoConnected = await this.tryAutoConnect();
     if (autoConnected) {
       return true;
     }
-
-    const SPP_UUID = 'aeac4a03-dff5-498f-843a-34487cf133eb';
-    const FASTPAIR_UUID = 'df21fe2c-2515-4fdb-8886-f12c4d67927c';
 
     this.state.isConnecting = true;
     this.notify();
 
     try {
       const serial = (navigator as any).serial;
+      // Filter specifically for Nothing/CMF SPP UUID so only the audio control port is shown
       this.port = await serial.requestPort({
-        allowedBluetoothServiceClassIds: [SPP_UUID, FASTPAIR_UUID],
-        filters: [{ bluetoothServiceClassId: SPP_UUID }, { bluetoothServiceClassId: FASTPAIR_UUID }],
+        allowedBluetoothServiceClassIds: [SPP_UUID],
+        filters: [{ bluetoothServiceClassId: SPP_UUID }],
       });
 
       await this.port.open({ baudRate: 9600 });
@@ -201,24 +202,24 @@ export class WebSerialManager {
   }
 
   private async initializeDevice() {
-    // Read serial number to detect model
+    // Read serial number first to detect specific earbud model
     await this.sendCommand(COMMANDS.READ_SERIAL);
-    await new Promise(r => setTimeout(r, 120));
+    await new Promise(r => setTimeout(r, 150));
 
     await this.sendCommand(COMMANDS.READ_BATTERY);
-    await new Promise(r => setTimeout(r, 120));
+    await new Promise(r => setTimeout(r, 150));
 
     await this.sendCommand(COMMANDS.READ_ANC);
-    await new Promise(r => setTimeout(r, 120));
+    await new Promise(r => setTimeout(r, 150));
 
     await this.sendCommand(COMMANDS.READ_EQ);
-    await new Promise(r => setTimeout(r, 120));
+    await new Promise(r => setTimeout(r, 150));
 
     await this.sendCommand(COMMANDS.READ_FIRMWARE);
-    await new Promise(r => setTimeout(r, 120));
+    await new Promise(r => setTimeout(r, 150));
 
     await this.sendCommand(COMMANDS.READ_IN_EAR);
-    await new Promise(r => setTimeout(r, 120));
+    await new Promise(r => setTimeout(r, 150));
 
     await this.sendCommand(COMMANDS.READ_LATENCY);
   }
@@ -227,20 +228,49 @@ export class WebSerialManager {
     if (!this.port || !this.port.readable) return;
     this.isReading = true;
 
+    let buffer = new Uint8Array(0);
+
     try {
       this.reader = this.port.readable.getReader();
       while (this.isReading) {
         const { value, done } = await this.reader.read();
         if (done) break;
-        if (value && value.length >= 8) {
-          const raw = new Uint8Array(value.buffer || value);
-          if (raw[0] === 0x55) {
-            this.handlePacket(raw);
+        if (!value || value.length === 0) continue;
+
+        // Concatenate new bytes into accumulator buffer
+        const chunk = new Uint8Array(value.buffer || value);
+        const combined = new Uint8Array(buffer.length + chunk.length);
+        combined.set(buffer, 0);
+        combined.set(chunk, buffer.length);
+        buffer = combined;
+
+        // Process all complete packets in buffer
+        while (buffer.length >= 8) {
+          const syncIdx = buffer.indexOf(0x55);
+          if (syncIdx === -1) {
+            buffer = new Uint8Array(0);
+            break;
           }
+          if (syncIdx > 0) {
+            buffer = buffer.slice(syncIdx);
+            if (buffer.length < 8) break;
+          }
+
+          const payloadLen = buffer[5];
+          const totalPacketLen = 8 + payloadLen + 2; // header (8) + payload + CRC (2)
+
+          if (buffer.length < totalPacketLen) {
+            // Wait for remaining packet chunk
+            break;
+          }
+
+          const packet = buffer.slice(0, totalPacketLen);
+          buffer = buffer.slice(totalPacketLen);
+          this.handlePacket(packet);
         }
       }
     } catch (err) {
-      // Stream error / disconnected
+      // Stream closed or error
     } finally {
       if (this.reader) {
         try { this.reader.releaseLock(); } catch {}
@@ -259,9 +289,18 @@ export class WebSerialManager {
         const serial = parseSerial(raw);
         if (serial) {
           this.state.serialNumber = serial;
-          const sku = serial.substring(4, 6);
-          const detectedModel = findModelBySku(sku);
-          this.state.model = detectedModel;
+          let sku = '';
+          const head = serial.substring(0, 2);
+          if (head === 'SH' || head === '13') {
+            sku = serial.substring(4, 6);
+          } else if (head === 'MA') {
+            const year = serial.substring(6, 8);
+            sku = (year === '22' || year === '23') ? '14' : '11200005';
+          }
+          if (sku) {
+            const detectedModel = findModelBySku(sku);
+            this.state.model = detectedModel;
+          }
           this.notify();
         }
         break;
@@ -310,12 +349,24 @@ export class WebSerialManager {
     }
   }
 
-  // Control Methods
+  // Model selection override
+  public setModel(model: EarbudModel) {
+    this.state.model = model;
+    this.notify();
+  }
+
+  // Real Control Methods (Dispatched over Bluetooth Serial)
   public async setAncMode(mode: AncMode) {
     this.state.ancMode = mode;
     this.notify();
     const byte = ancModeToByte(mode);
     await this.sendCommand(COMMANDS.SET_ANC, [0x01, byte, 0x00]);
+  }
+
+  public async setPersonalizedAnc(enabled: boolean) {
+    this.state.personalizedAnc = enabled;
+    this.notify();
+    await this.sendCommand(COMMANDS.SET_PERSONAL_ANC, [enabled ? 0x01 : 0x00]);
   }
 
   public async setEqPreset(preset: EqPreset) {

@@ -239,13 +239,20 @@ export function parseFirmware(rawData: Uint8Array): string {
 // Serial Number Decoder
 export function parseSerial(rawData: Uint8Array): string | null {
   try {
-    const text = new TextDecoder().decode(rawData.subarray(7));
+    const text = new TextDecoder().decode(rawData.subarray(6));
+    // Check CSV line format (standard Nothing firmware response: device,type,value)
     const lines = text.split('\n');
     for (const line of lines) {
       const parts = line.split(',');
-      if (parts.length === 3 && parseInt(parts[1], 10) === 4 && parts[2]) {
-        return parts[2].trim();
+      if (parts.length >= 3 && parseInt(parts[1], 10) === 4 && parts[2]) {
+        const val = parts[2].trim();
+        if (val.length >= 8) return val;
       }
+    }
+    // Direct regex matching for Nothing & CMF serial prefixes (SH, MA, 13)
+    const match = text.match(/(?:SH|MA|13)[A-Za-z0-9]{10,18}/);
+    if (match) {
+      return match[0];
     }
   } catch {
     // ignore
