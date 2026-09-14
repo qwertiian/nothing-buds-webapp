@@ -122,3 +122,4 @@ export const InstallGuideModal: React.FC<InstallGuideModalProps> = ({
     </div>
   );
 };
+
