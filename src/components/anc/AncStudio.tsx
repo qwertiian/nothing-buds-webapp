@@ -8,6 +8,8 @@ interface AncStudioProps {
   personalizedAnc: boolean;
   onSetPersonalizedAnc: (enabled: boolean) => void;
   model: EarbudModel;
+  isConnected?: boolean;
+  onRequestConnect?: () => void;
 }
 
 export const AncStudio: React.FC<AncStudioProps> = ({
@@ -16,6 +18,8 @@ export const AncStudio: React.FC<AncStudioProps> = ({
   personalizedAnc,
   onSetPersonalizedAnc,
   model,
+  isConnected = false,
+  onRequestConnect,
 }) => {
   const [showFitTest, setShowFitTest] = useState(false);
   const [fitTestStep, setFitTestStep] = useState<'intro' | 'testing' | 'result'>('intro');
@@ -46,9 +50,20 @@ export const AncStudio: React.FC<AncStudioProps> = ({
     <div className="p-5 sm:p-7 rounded-2xl theme-card flex flex-col gap-6 shadow-xl transition-colors duration-300">
       {/* Title */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <span className="glyph-dot" />
           <h2 className="font-ndot text-xl text-[var(--text-main)] tracking-wider uppercase">NOISE CONTROL</h2>
+          {isConnected ? (
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              HARDWARE SYNCED
+            </span>
+          ) : (
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              OFFLINE
+            </span>
+          )}
         </div>
         {model.hasEarFitTest && (
           <button
@@ -62,6 +77,25 @@ export const AncStudio: React.FC<AncStudioProps> = ({
           </button>
         )}
       </div>
+
+      {/* Offline Hardware Prompt */}
+      {!isConnected && (
+        <div 
+          onClick={onRequestConnect}
+          className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-between gap-3 cursor-pointer hover:bg-amber-500/15 transition"
+        >
+          <div className="flex items-center gap-2.5 text-xs font-mono text-amber-300">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+            <span>Hardware control channel not synced. Click to sync {model.name} to control real earbud hardware.</span>
+          </div>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onRequestConnect?.(); }}
+            className="px-3 py-1 text-[11px] font-mono font-bold bg-amber-500 text-black rounded-lg hover:opacity-90 shrink-0"
+          >
+            Sync Now
+          </button>
+        </div>
+      )}
 
       {/* Main 3 Modes: Noise Cancellation, Transparency, Off */}
       <div className="grid grid-cols-3 gap-2 p-1.5 rounded-xl border border-[var(--border-dim)] bg-[var(--bg-app)]/50">

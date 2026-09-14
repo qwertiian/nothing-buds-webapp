@@ -186,6 +186,8 @@ export function App() {
               personalizedAnc={state.personalizedAnc}
               onSetPersonalizedAnc={setPersonalizedAnc}
               model={state.model}
+              isConnected={state.connected}
+              onRequestConnect={handleOpenConnect}
             />
           )}
 

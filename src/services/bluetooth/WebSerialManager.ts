@@ -245,7 +245,7 @@ export class WebSerialManager {
 
     try {
       this.writer = this.port.writable.getWriter();
-      await this.writer.write(packet.buffer);
+      await this.writer.write(packet);
       this.writer.releaseLock();
       this.writer = null;
     } catch (err) {
@@ -443,6 +443,9 @@ export class WebSerialManager {
     this.notify();
     const byte = ancModeToByte(mode);
     await this.sendCommand(COMMANDS.SET_ANC, [0x01, byte, 0x00]);
+    setTimeout(() => {
+      this.sendCommand(COMMANDS.READ_ANC).catch(() => {});
+    }, 180);
   }
 
   public async setPersonalizedAnc(enabled: boolean) {

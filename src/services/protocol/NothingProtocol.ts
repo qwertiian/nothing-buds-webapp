@@ -118,28 +118,41 @@ export function parseBattery(rawData: Uint8Array) {
 
 // ANC Mode Parser
 export function parseAnc(rawData: Uint8Array): AncMode {
-  if (rawData.length <= 9) return 'off';
-  const ancStatus = rawData[9];
-  switch (ancStatus) {
-    case 4: return 'high';
-    case 5: return 'off';
-    case 2: return 'transparency';
+  if (rawData.length < 10) return 'off';
+  // Check standard Nothing payload format [kind=1, value, 0] starting at byte 8
+  const payload = rawData.subarray(8);
+  for (let offset = 0; offset < payload.length - 1; offset += 3) {
+    const kind = payload[offset];
+    const val = payload[offset + 1];
+    if (kind === 1) {
+      return byteToAncMode(val);
+    }
+  }
+  return byteToAncMode(rawData[9]);
+}
+
+export function byteToAncMode(val: number): AncMode {
+  switch (val) {
+    case 1: return 'high';
+    case 2: return 'mid';
     case 3: return 'low';
-    case 7: return 'mid';
-    case 1: return 'adaptive';
+    case 4: return 'adaptive';
+    case 5: return 'off';
+    case 7: return 'transparency';
     default: return 'off';
   }
 }
 
-// ANC Mode to Packet Byte
+// ANC Mode to Packet Byte (Official Nothing X / RFCOMM specification)
+// 1 = High / Cancellation, 2 = Mid, 3 = Low, 4 = Adaptive, 5 = Off, 7 = Transparency
 export function ancModeToByte(mode: AncMode): number {
   switch (mode) {
-    case 'high': return 0x04;
-    case 'off': return 0x05;
-    case 'transparency': return 0x02;
+    case 'high': return 0x01;
+    case 'mid': return 0x02;
     case 'low': return 0x03;
-    case 'mid': return 0x07;
-    case 'adaptive': return 0x01;
+    case 'adaptive': return 0x04;
+    case 'off': return 0x05;
+    case 'transparency': return 0x07;
   }
 }
 
