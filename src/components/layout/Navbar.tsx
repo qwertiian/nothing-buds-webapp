@@ -1,7 +1,7 @@
-import React from 'react';
-import { Bluetooth, Sparkles, Sliders, RefreshCw, AlertCircle, Zap } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
 import { AppTheme, EarbudModel } from '../../models/types';
 import { SUPPORTED_DEVICES } from '../../models/devices';
+import { Bluetooth, Sparkles, Sliders, RefreshCw, AlertCircle, Zap, ChevronDown, X, Palette, Check } from 'lucide-react';
 
 interface NavbarProps {
   theme: AppTheme;
@@ -28,154 +28,163 @@ export const Navbar: React.FC<NavbarProps> = ({
   onDisconnect,
   activeModel,
   onSelectModel,
-  error,
+  error
 }) => {
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [modelOpen, setModelOpen] = useState(false);
+  
+  const themeRef = useRef<HTMLDivElement>(null);
+  const modelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (themeRef.current && !themeRef.current.contains(event.target as Node)) {
+        setThemeOpen(false);
+      }
+      if (modelRef.current && !modelRef.current.contains(event.target as Node)) {
+        setModelOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const themeOptions: { id: AppTheme; label: string; dotColor: string }[] = [
+    { id: 'nothing-dark', label: 'Nothing Dark', dotColor: 'bg-[#d71920]' },
+    { id: 'pokemon-pokedex', label: 'Pokédex 8-Bit', dotColor: 'bg-[#8bac0f]' },
+    { id: 'cyberpunk-neon', label: 'Cyberpunk Neon', dotColor: 'bg-[#00f0ff]' },
+    { id: 'lofi-vibes', label: 'Lofi Vibes', dotColor: 'bg-[#c4a882]' },
+  ];
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md">
+    <>
       {error && (
-        <div className="bg-nothing-red/20 border-b border-nothing-red text-xs px-4 py-2 flex items-center justify-between text-white">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-nothing-red" />
-            <span>{error}</span>
-          </div>
+        <div className="bg-[#d71920]/10 border-b border-[#d71920]/20 px-4 py-3 flex items-center justify-center gap-3">
+          <AlertCircle size={16} className="text-[#d71920]" />
+          <span className="text-sm font-mono text-[#d71920]">{error}</span>
         </div>
       )}
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <nav className="h-16 border-b border-white/6 bg-[#0a0a0a]/80 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-40">
         {/* Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-3 h-3 rounded-full bg-nothing-red shadow-[0_0_10px_rgba(215,25,32,0.8)] animate-pulse" />
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <span className="font-ndot text-lg sm:text-xl tracking-wider text-white">EAR</span>
-              <span className="font-ndot text-xs px-1.5 py-0.5 rounded border border-white/20 text-neutral-400">
-                (OS)
-              </span>
-            </div>
-            <span className="text-[10px] tracking-widest uppercase font-mono text-neutral-500">
-              Desktop & Web Companion
-            </span>
-          </div>
-        </div>
-
-        {/* Model Selector Pill (When in simulator) */}
-        <div className="hidden md:flex items-center gap-2">
-          <span className="text-xs font-mono text-neutral-400">DEVICE:</span>
-          <select
-            value={activeModel.id}
-            onChange={(e) => {
-              const selected = SUPPORTED_DEVICES.find(d => d.id === e.target.value);
-              if (selected) onSelectModel(selected);
-            }}
-            className="bg-[#171717] hover:bg-[#222] text-xs font-mono text-white border border-white/15 rounded-lg px-3 py-1.5 focus:outline-none focus:border-nothing-red transition cursor-pointer"
-          >
-            {SUPPORTED_DEVICES.map(dev => (
-              <option key={dev.id} value={dev.id}>
-                {dev.name} ({dev.codename.toUpperCase()})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Theme Selector */}
-          <div className="relative group">
+        <div className="flex items-center gap-4">
+          <div className="font-ndot text-2xl tracking-widest text-white mt-1">NOTHING</div>
+          <div className="h-4 w-[1px] bg-white/20" />
+          
+          <div className="relative" ref={modelRef}>
             <button
-              title="Change Theme"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-[#161616] hover:bg-[#202020] text-xs font-mono text-neutral-300 transition"
+              onClick={() => setModelOpen(!modelOpen)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors group"
             >
-              <Sparkles className="w-3.5 h-3.5 text-nothing-red" />
-              <span className="hidden sm:inline capitalize">
-                {theme === 'pokemon-pokedex' ? 'Pokédex 🎮' : theme.replace('-', ' ')}
+              <span className="font-mono text-sm text-white/80 group-hover:text-white transition-colors">
+                {activeModel.name}
               </span>
+              <ChevronDown size={14} className={`text-white/40 transition-transform duration-300 ${modelOpen ? 'rotate-180' : ''}`} />
             </button>
-
-            {/* Dropdown */}
-            <div className="absolute right-0 mt-1 w-48 rounded-xl border border-white/10 bg-[#141414] shadow-2xl p-1.5 hidden group-hover:block z-50">
-              <button
-                onClick={() => onThemeChange('nothing-dark')}
-                className={`w-full text-left px-3 py-2 text-xs font-mono rounded-lg transition flex items-center justify-between ${
-                  theme === 'nothing-dark' ? 'bg-white/10 text-white' : 'text-neutral-400 hover:bg-white/5'
-                }`}
-              >
-                <span>Nothing Dark (Default)</span>
-                <span className="w-2 h-2 rounded-full bg-nothing-red" />
-              </button>
-              <button
-                onClick={() => onThemeChange('pokemon-pokedex')}
-                className={`w-full text-left px-3 py-2 text-xs font-mono rounded-lg transition flex items-center justify-between ${
-                  theme === 'pokemon-pokedex' ? 'bg-pokedex-accent/40 text-[#9bbc0f]' : 'text-neutral-400 hover:bg-white/5'
-                }`}
-              >
-                <span>Pokédex 8-Bit ⚡</span>
-                <span className="w-2 h-2 rounded-full bg-[#8bac0f]" />
-              </button>
-              <button
-                onClick={() => onThemeChange('cyberpunk-neon')}
-                className={`w-full text-left px-3 py-2 text-xs font-mono rounded-lg transition flex items-center justify-between ${
-                  theme === 'cyberpunk-neon' ? 'bg-cyan-500/20 text-cyan-300' : 'text-neutral-400 hover:bg-white/5'
-                }`}
-              >
-                <span>Cyberpunk Neon</span>
-                <span className="w-2 h-2 rounded-full bg-cyan-400" />
-              </button>
-              <button
-                onClick={() => onThemeChange('lofi-vibes')}
-                className={`w-full text-left px-3 py-2 text-xs font-mono rounded-lg transition flex items-center justify-between ${
-                  theme === 'lofi-vibes' ? 'bg-purple-500/20 text-purple-300' : 'text-neutral-400 hover:bg-white/5'
-                }`}
-              >
-                <span>Lofi Vibes 🎧</span>
-                <span className="w-2 h-2 rounded-full bg-purple-400" />
-              </button>
-            </div>
+            
+            {modelOpen && (
+              <div className="absolute top-full left-0 mt-2 w-52 bg-[#111111] border border-white/10 rounded-xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                {SUPPORTED_DEVICES.map(model => (
+                  <button
+                    key={model.id}
+                    onClick={() => {
+                      onSelectModel(model);
+                      setModelOpen(false);
+                    }}
+                    className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-white/5 transition-colors"
+                  >
+                    <div className="flex flex-col">
+                      <span className={`font-mono text-xs ${activeModel.id === model.id ? 'text-white font-semibold' : 'text-white/60'}`}>
+                        {model.name}
+                      </span>
+                      <span className="text-[10px] font-mono text-white/30 uppercase">
+                        {model.codename}
+                      </span>
+                    </div>
+                    {activeModel.id === model.id && <Check size={14} className="text-[#d71920]" />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+        </div>
 
+        {/* Actions */}
+        <div className="flex items-center gap-3">
           {/* Simulator Toggle */}
           <button
             onClick={() => onToggleSimulator(!isSimulator)}
-            title={isSimulator ? "Switch to Real Bluetooth Hardware" : "Switch to Virtual Earbuds Simulator"}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition ${
-              isSimulator
-                ? 'bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20'
-                : 'bg-white/5 border-white/10 text-neutral-400 hover:bg-white/10'
+            title={isSimulator ? "Switch to real Bluetooth hardware" : "Switch to Virtual Simulator"}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 font-mono text-xs uppercase tracking-wider ${
+              isSimulator 
+                ? 'bg-[#d71920]/10 border-[#d71920]/20 text-[#d71920]' 
+                : 'bg-transparent border-white/6 text-white/40 hover:bg-white/5 hover:text-white/70'
             }`}
           >
-            <Sliders className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{isSimulator ? 'Sim Mode' : 'Hardware'}</span>
+            <Sparkles size={14} />
+            <span>Sim Mode</span>
           </button>
 
-          {/* Connect / Disconnect Bluetooth */}
-          {isConnected && !isSimulator ? (
+          {/* Theme Dropdown */}
+          <div className="relative" ref={themeRef}>
             <button
-              onClick={onDisconnect}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-950/30 hover:bg-red-900/40 text-xs font-mono text-red-300 transition"
+              onClick={() => setThemeOpen(!themeOpen)}
+              title="Change Theme"
+              className={`p-2.5 rounded-xl border transition-all duration-300 flex items-center gap-2 ${
+                themeOpen ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/6 text-white/40 hover:bg-white/5 hover:text-white/70'
+              }`}
             >
-              <div className="w-2 h-2 rounded-full bg-red-500" />
-              <span>Disconnect</span>
+              <Palette size={16} />
             </button>
-          ) : (
-            <button
-              onClick={onConnect}
-              disabled={isConnecting}
-              className="relative flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-nothing-red hover:bg-nothing-redHover text-white text-xs font-mono font-medium shadow-[0_0_15px_rgba(215,25,32,0.4)] transition disabled:opacity-50"
-            >
-              {isConnecting ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Connecting...</span>
-                </>
-              ) : (
-                <>
-                  <Bluetooth className="w-3.5 h-3.5" />
-                  <span>Connect Buds</span>
-                </>
-              )}
-            </button>
-          )}
+            
+            {themeOpen && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-[#111111] border border-white/10 rounded-xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 z-50 p-1">
+                {themeOptions.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      onThemeChange(t.id);
+                      setThemeOpen(false);
+                    }}
+                    className={`w-full px-3 py-2.5 text-left flex items-center justify-between rounded-lg transition-colors ${
+                      theme === t.id ? 'bg-white/10 text-white font-medium' : 'text-white/60 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className={`w-2 h-2 rounded-full ${t.dotColor}`} />
+                      <span className="font-mono text-xs">{t.label}</span>
+                    </div>
+                    {theme === t.id && <Check size={14} className="text-[#d71920]" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="w-[1px] h-6 bg-white/10 mx-1" />
+
+          {/* Connect Button */}
+          <button
+            onClick={isConnected ? onDisconnect : onConnect}
+            disabled={isConnecting}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 font-mono text-xs uppercase tracking-wider disabled:opacity-50 ${
+              isConnected
+                ? 'bg-white/10 text-white hover:bg-[#d71920]/20 hover:text-[#d71920] border border-white/10 hover:border-[#d71920]/30'
+                : 'bg-white text-black hover:bg-white/90 shadow-lg shadow-white/5'
+            }`}
+          >
+            {isConnecting ? (
+              <RefreshCw size={14} className="animate-spin" />
+            ) : isConnected ? (
+              <X size={14} />
+            ) : (
+              <Bluetooth size={14} />
+            )}
+            <span>{isConnecting ? 'Connecting' : isConnected ? 'Disconnect' : 'Connect'}</span>
+          </button>
         </div>
-      </div>
-    </header>
+      </nav>
+    </>
   );
 };

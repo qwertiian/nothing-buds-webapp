@@ -9,7 +9,7 @@ import { GestureStudio } from './components/gestures/GestureStudio';
 import { DeviceSettings } from './components/settings/DeviceSettings';
 import { PokemonCompanion } from './components/themes/PokemonCompanion';
 import { BluetoothModal } from './components/connection/BluetoothModal';
-import { Sliders, Volume2, Gamepad2, Sparkles, Settings, Github, ExternalLink, Download } from 'lucide-react';
+import { Sliders, Volume2, Gamepad2, Sparkles, Settings, Github, ExternalLink } from 'lucide-react';
 
 export function App() {
   const {
@@ -38,7 +38,7 @@ export function App() {
   const [showConnectModal, setShowConnectModal] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#f5f5f5] flex flex-col selection:bg-nothing-red selection:text-white relative">
+    <div className="min-h-screen bg-[#0a0a0a] text-[#f5f5f5] flex flex-col selection:bg-nothing-red selection:text-white relative font-sans">
       {/* Top Navigation */}
       <Navbar
         theme={theme}
@@ -55,7 +55,7 @@ export function App() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col gap-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col gap-5 sm:gap-6">
         {/* Top Hero: Device Showcase */}
         <DeviceShowcase
           model={state.model}
@@ -69,70 +69,70 @@ export function App() {
         <BatteryCard battery={state.battery} />
 
         {/* Studio Navigation Pills */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-xl border border-white/10 bg-[#121212] overflow-x-auto">
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl border border-white/6 bg-[#111111] overflow-x-auto hide-scrollbar">
           <button
             onClick={() => setActiveTab('controls')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition whitespace-nowrap ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-mono transition-all duration-200 whitespace-nowrap ${
               activeTab === 'controls'
-                ? 'bg-white text-black font-semibold shadow-md'
-                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                ? 'bg-white/10 text-white border-l-2 border-nothing-red shadow-sm'
+                : 'text-white/50 hover:bg-white/5 hover:text-white'
             }`}
           >
-            <Volume2 className="w-3.5 h-3.5" />
+            <Volume2 className="w-4 h-4" />
             <span>Noise Control</span>
           </button>
 
           <button
             onClick={() => setActiveTab('eq')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition whitespace-nowrap ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-mono transition-all duration-200 whitespace-nowrap ${
               activeTab === 'eq'
-                ? 'bg-white text-black font-semibold shadow-md'
-                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                ? 'bg-white/10 text-white border-l-2 border-nothing-red shadow-sm'
+                : 'text-white/50 hover:bg-white/5 hover:text-white'
             }`}
           >
-            <Sliders className="w-3.5 h-3.5" />
+            <Sliders className="w-4 h-4" />
             <span>Equalizer</span>
           </button>
 
           <button
             onClick={() => setActiveTab('gestures')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition whitespace-nowrap ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-mono transition-all duration-200 whitespace-nowrap ${
               activeTab === 'gestures'
-                ? 'bg-white text-black font-semibold shadow-md'
-                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                ? 'bg-white/10 text-white border-l-2 border-nothing-red shadow-sm'
+                : 'text-white/50 hover:bg-white/5 hover:text-white'
             }`}
           >
-            <Gamepad2 className="w-3.5 h-3.5" />
+            <Gamepad2 className="w-4 h-4" />
             <span>Gestures</span>
           </button>
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition whitespace-nowrap ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-mono transition-all duration-200 whitespace-nowrap ${
               activeTab === 'settings'
-                ? 'bg-white text-black font-semibold shadow-md'
-                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                ? 'bg-white/10 text-white border-l-2 border-nothing-red shadow-sm'
+                : 'text-white/50 hover:bg-white/5 hover:text-white'
             }`}
           >
-            <Settings className="w-3.5 h-3.5" />
-            <span>Device Settings</span>
+            <Settings className="w-4 h-4" />
+            <span>Settings</span>
           </button>
 
           <button
             onClick={() => setActiveTab('pokemon')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition whitespace-nowrap ml-auto ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-mono transition-all duration-200 whitespace-nowrap ml-auto ${
               activeTab === 'pokemon'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold'
-                : 'text-emerald-400/80 hover:text-emerald-300 hover:bg-emerald-500/10'
+                ? 'bg-white/10 text-white border-l-2 border-nothing-red shadow-sm'
+                : 'text-white/50 hover:bg-white/5 hover:text-white'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Pokédex Companion</span>
+            <Sparkles className="w-4 h-4" />
+            <span>Pokédex</span>
           </button>
         </div>
 
         {/* Tab Content Display */}
-        <div className="w-full">
+        <div className="w-full transition-all duration-200">
           {activeTab === 'controls' && (
             <AncStudio
               ancMode={state.ancMode}
@@ -183,26 +183,18 @@ export function App() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t border-white/10 bg-[#0d0d0d] py-6 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-neutral-400">
-          <div className="flex items-center gap-2">
-            <span className="font-ndot text-sm text-white">EAR (OS)</span>
-            <span>—</span>
-            <span>Unofficial Desktop & Web Companion for Nothing & CMF Buds</span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <a
-              href="https://github.com/qwertiian/nothing-buds-webapp"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-neutral-300 hover:text-white transition"
-            >
-              <Github className="w-3.5 h-3.5" />
-              <span>GitHub Repository</span>
-              <ExternalLink className="w-3 h-3 text-neutral-500" />
-            </a>
-          </div>
+      <footer className="w-full border-t border-white/6 py-4 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs font-mono text-neutral-500">
+          <span>NOTHING OS DESKTOP COMPANION</span>
+          <a
+            href="https://github.com/qwertiian/nothing-buds-webapp"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 hover:text-white transition-all duration-200"
+          >
+            <Github className="w-3.5 h-3.5" />
+            <span>GITHUB</span>
+          </a>
         </div>
       </footer>
 

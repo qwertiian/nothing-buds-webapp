@@ -87,9 +87,47 @@ export class WebSerialManager {
     this.listeners.forEach(l => l(s));
   }
 
+  public async tryAutoConnect(): Promise<boolean> {
+    if (!this.isSupported()) return false;
+    
+    try {
+      const serial = (navigator as any).serial;
+      const ports = await serial.getPorts();
+      
+      if (ports && ports.length > 0) {
+        this.state.isConnecting = true;
+        this.notify();
+        
+        this.port = ports[0];
+        await this.port.open({ baudRate: 9600 });
+        
+        this.state.connected = true;
+        this.state.isConnecting = false;
+        this.notify();
+        
+        this.startReading();
+        this.initializeDevice();
+        return true;
+      }
+    } catch (err) {
+      this.state.connected = false;
+      this.state.isConnecting = false;
+      this.port = null;
+      this.notify();
+      console.warn('Auto-connect failed', err);
+    }
+    
+    return false;
+  }
+
   public async connect(): Promise<boolean> {
     if (!this.isSupported()) {
       throw new Error('Web Serial API is not supported in this browser. Please use Chrome, Edge, Brave, or Opera.');
+    }
+
+    const autoConnected = await this.tryAutoConnect();
+    if (autoConnected) {
+      return true;
     }
 
     const SPP_UUID = 'aeac4a03-dff5-498f-843a-34487cf133eb';

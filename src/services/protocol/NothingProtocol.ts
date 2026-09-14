@@ -252,3 +252,4 @@ export function parseSerial(rawData: Uint8Array): string | null {
   }
   return null;
 }
+

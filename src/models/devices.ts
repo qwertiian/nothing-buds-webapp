@@ -318,3 +318,4 @@ export function findModelBySku(sku: string): EarbudModel {
 export function findModelByBase(baseId: string): EarbudModel {
   return SUPPORTED_DEVICES.find(d => d.baseId === baseId) || SUPPORTED_DEVICES[0];
 }
+

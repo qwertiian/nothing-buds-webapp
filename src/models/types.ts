@@ -99,3 +99,4 @@ export type AppTheme =
   | 'pokemon-pokedex' 
   | 'cyberpunk-neon' 
   | 'lofi-vibes';
+
