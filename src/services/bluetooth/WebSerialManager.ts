@@ -138,6 +138,16 @@ export class WebSerialManager {
       this.notify();
 
       this.port = targetPort;
+      // If port is already open and functional, reuse it directly
+      if (this.port?.readable && this.port?.writable) {
+        this.state.connected = true;
+        this.state.isConnecting = false;
+        this.notify();
+        this.startReading();
+        this.initializeDevice();
+        return true;
+      }
+
       await this.port.open({ baudRate: 9600 });
 
       this.state.connected = true;

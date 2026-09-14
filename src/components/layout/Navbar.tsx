@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AppTheme, EarbudModel } from '../../models/types';
 import { SUPPORTED_DEVICES } from '../../models/devices';
-import { Bluetooth, RefreshCw, AlertCircle, ChevronDown, X, Palette, Check } from 'lucide-react';
+import { Bluetooth, RefreshCw, AlertCircle, ChevronDown, X, Palette, Check, Download } from 'lucide-react';
 
 interface NavbarProps {
   theme: AppTheme;
@@ -13,6 +13,8 @@ interface NavbarProps {
   activeModel: EarbudModel;
   onSelectModel: (model: EarbudModel) => void;
   error: string | null;
+  isStandalone?: boolean;
+  onInstallApp?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -25,6 +27,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeModel,
   onSelectModel,
   error,
+  isStandalone = false,
+  onInstallApp,
 }) => {
   const [themeOpen, setThemeOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
@@ -150,6 +154,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             )}
           </div>
+
+          {/* Install Desktop App Button (visible when browsing on web) */}
+          {!isStandalone && onInstallApp && (
+            <button
+              onClick={onInstallApp}
+              title="Install Ear (OS) as a Windows Desktop App"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--accent-color)]/40 bg-[var(--accent-color)]/10 hover:bg-[var(--accent-color)]/20 text-[var(--accent-color)] transition-all font-mono text-xs font-semibold shadow-sm"
+            >
+              <Download size={13} />
+              <span>INSTALL APP</span>
+            </button>
+          )}
 
           <div className="w-[1px] h-5 bg-[var(--border-dim)]" />
 

@@ -9,7 +9,8 @@ import { DeviceSettings } from './components/settings/DeviceSettings';
 import { PokemonCompanion } from './components/themes/PokemonCompanion';
 import { BluetoothModal } from './components/connection/BluetoothModal';
 import { FirstTimePermissionsModal } from './components/onboarding/FirstTimePermissionsModal';
-import { Sliders, Volume2, Sparkles, Settings, Github, ExternalLink, Bluetooth, ShieldCheck } from 'lucide-react';
+import { InstallGuideModal } from './components/installation/InstallGuideModal';
+import { Sliders, Volume2, Sparkles, Settings, Github, ExternalLink, Bluetooth, ShieldCheck, Download, X } from 'lucide-react';
 
 export function App() {
   const {
@@ -35,6 +36,59 @@ export function App() {
   const [activeTab, setActiveTab] = useState<'controls' | 'eq' | 'settings' | 'pokemon'>('controls');
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [showFirstTimeModal, setShowFirstTimeModal] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(true);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+
+  // Detect standalone PWA mode and capture install prompt
+  useEffect(() => {
+    const checkStandalone = () => {
+      const standalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true ||
+        document.referrer.includes('android-app://');
+      setIsStandalone(standalone);
+    };
+    checkStandalone();
+
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setIsStandalone(true);
+      setDeferredPrompt(null);
+      setShowInstallBanner(false);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleTriggerInstall = async () => {
+    if (deferredPrompt) {
+      try {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          setIsStandalone(true);
+          setShowInstallBanner(false);
+        }
+        setDeferredPrompt(null);
+      } catch {
+        setShowInstallModal(true);
+      }
+    } else {
+      setShowInstallModal(true);
+    }
+  };
 
   // Check if first-time permission onboarding is needed
   useEffect(() => {
@@ -73,10 +127,53 @@ export function App() {
         activeModel={state.model}
         onSelectModel={setModel}
         error={error}
+        isStandalone={isStandalone}
+        onInstallApp={handleTriggerInstall}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 flex flex-col gap-5">
+        {/* PWA Desktop App Recommendation Banner */}
+        {!isStandalone && showInstallBanner && (
+          <div className="w-full p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#1c1414] via-[#141414] to-[#161616] border border-red-500/25 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-[var(--accent-color)]/15 border border-[var(--accent-color)]/30 flex items-center justify-center text-[var(--accent-color)] shrink-0">
+                <Download size={20} className="animate-pulse" />
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <span className="font-ndot text-sm sm:text-base text-[var(--text-main)] tracking-wider uppercase">
+                    RECOMMENDED: INSTALL DESKTOP APP
+                  </span>
+                  <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[var(--accent-color)] text-white font-bold uppercase">
+                    Better Performance
+                  </span>
+                </div>
+                <span className="text-xs font-mono text-[var(--text-sub)] mt-0.5">
+                  Install Ear (OS) as a standalone Windows app for direct taskbar pinning, lower Bluetooth latency, and faster background syncing.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
+              <button
+                onClick={handleTriggerInstall}
+                className="px-5 py-2.5 rounded-xl bg-[var(--text-main)] text-[var(--bg-app)] hover:opacity-90 font-mono text-xs font-bold shadow-lg transition flex items-center gap-2"
+              >
+                <Download size={14} />
+                <span>INSTALL APP</span>
+              </button>
+              <button
+                onClick={() => setShowInstallBanner(false)}
+                title="Dismiss recommendation"
+                className="p-2 rounded-xl border border-[var(--border-dim)] text-[var(--text-sub)] hover:text-white hover:border-[var(--border-bright)] transition"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Device Not Connected Banner */}
         {!state.connected && (
           <div className="w-full p-4 sm:p-5 rounded-2xl theme-card border-dashed flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in">
@@ -266,6 +363,14 @@ export function App() {
         isOpen={showFirstTimeModal}
         onGrant={handleGrantFirstTime}
         onDismiss={handleDismissFirstTime}
+      />
+
+      {/* PWA Install Guide Modal */}
+      <InstallGuideModal
+        isOpen={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+        onTriggerNativePrompt={handleTriggerInstall}
+        canPromptDirectly={!!deferredPrompt}
       />
     </div>
   );

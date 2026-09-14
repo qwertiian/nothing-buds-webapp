@@ -73,7 +73,12 @@ export function useEarbudController() {
       await webSerialManager.connect();
     } catch (err: any) {
       if (err.name !== 'NotFoundError') {
-        setError(err.message || 'Failed to connect via Bluetooth');
+        const rawMsg = err.message || '';
+        if (rawMsg.includes('Failed to open serial port') || rawMsg.includes('Failed to open')) {
+          setError('Bluetooth port is busy or in use. If another browser tab or app is open, please close it and try again.');
+        } else {
+          setError(rawMsg || 'Failed to connect via Bluetooth');
+        }
       }
     } finally {
       isConnectingRef.current = false;
