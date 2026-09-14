@@ -1,0 +1,63 @@
+@font-face {
+  font-family: 'NDOT-55';
+  src: url('/fonts/ndot_55.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NDOT-55';
+  src: url('/fonts/ndot_55_bold.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NDOT-57';
+  src: url('/fonts/ndot_57.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lettera-Mono';
+  src: url('/fonts/lettera_monoll_regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lettera-Mono';
+  src: url('/fonts/lettera_monoll_medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Space-Grotesk';
+  src: url('/fonts/space_grotesk_regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Space-Grotesk';
+  src: url('/fonts/space_grotesk_medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Space-Grotesk';
+  src: url('/fonts/space_grotesk_bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
