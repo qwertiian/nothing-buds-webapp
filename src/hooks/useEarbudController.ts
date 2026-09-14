@@ -106,16 +106,7 @@ export function useEarbudController() {
 
   const setGesture = useCallback((ear: 'left' | 'right', trigger: keyof GestureConfig, action: GestureConfig[keyof GestureConfig]) => {
     soundFx.playClick(750);
-    setState(prev => ({
-      ...prev,
-      gestures: {
-        ...prev.gestures,
-        [ear]: {
-          ...prev.gestures[ear],
-          [trigger]: action,
-        },
-      },
-    }));
+    webSerialManager.setGesture(ear, trigger, action);
   }, []);
 
   const toggleRinging = useCallback((ear: 'left' | 'right') => {

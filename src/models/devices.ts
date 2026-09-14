@@ -304,13 +304,24 @@ export const SKU_TO_MODEL_MAP: Record<string, string> = {
   '78': 'cmf_buds_pro_2_orange',
   '79': 'cmf_buds_pro_2_blue',
   '76': 'cmf_buds_pro_2_blue',
+  '80': 'cmf_buds_pro_2_blue',
+  '81': 'cmf_buds_pro_2_orange',
+  '82': 'cmf_buds_pro_2_blue',
+  '83': 'cmf_buds_pro_2_blue',
+  '97': 'cmf_buds_pro_2_blue',
+  '51': 'cmf_buds_pro_2_blue',
   '58': 'cmf_buds_orange',
   '54': 'cmf_buds_orange',
   '48': 'cmf_neckband_pro_orange',
   '11200005': 'ear_open_white',
 };
 
-export function findModelBySku(sku: string): EarbudModel {
+export function findModelBySku(sku: string, serial: string = ''): EarbudModel {
+  if (serial.startsWith('13')) {
+    // 13 is CMF product line
+    const modelId = SKU_TO_MODEL_MAP[sku] || 'cmf_buds_pro_2_blue';
+    return SUPPORTED_DEVICES.find(d => d.id === modelId) || SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_pro_2_blue')!;
+  }
   const modelId = SKU_TO_MODEL_MAP[sku] || 'ear_2024_black';
   return SUPPORTED_DEVICES.find(d => d.id === modelId) || SUPPORTED_DEVICES[0];
 }
@@ -318,4 +329,37 @@ export function findModelBySku(sku: string): EarbudModel {
 export function findModelByBase(baseId: string): EarbudModel {
   return SUPPORTED_DEVICES.find(d => d.baseId === baseId) || SUPPORTED_DEVICES[0];
 }
+
+export function findModelByName(name: string): EarbudModel {
+  const n = name.toLowerCase();
+  if (n.includes('pro 2') || n.includes('buds 2') || n.includes('espeon')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_pro_2_blue') || SUPPORTED_DEVICES[0];
+  }
+  if (n.includes('neckband') || n.includes('crobat')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'cmf_neckband_pro_orange') || SUPPORTED_DEVICES[0];
+  }
+  if (n.includes('buds pro') || n.includes('corsola')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_pro_orange') || SUPPORTED_DEVICES[0];
+  }
+  if (n.includes('cmf') || n.includes('donphan')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_orange') || SUPPORTED_DEVICES[0];
+  }
+  if (n.includes('ear (stick)') || n.includes('stick')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'ear_stick') || SUPPORTED_DEVICES[0];
+  }
+  if (n.includes('ear (2)') || n.includes('ear 2')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'ear_2_black') || SUPPORTED_DEVICES[0];
+  }
+  if (n.includes('ear (a)') || n.includes('ear a') || n.includes('cleffa')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'ear_a_yellow') || SUPPORTED_DEVICES[0];
+  }
+  if (n.includes('ear (1)') || n.includes('ear 1')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'ear_1_white') || SUPPORTED_DEVICES[0];
+  }
+  if (n.includes('ear (open)') || n.includes('open') || n.includes('flaaffy')) {
+    return SUPPORTED_DEVICES.find(d => d.id === 'ear_open_white') || SUPPORTED_DEVICES[0];
+  }
+  return SUPPORTED_DEVICES.find(d => d.id === 'ear_2024_black') || SUPPORTED_DEVICES[0];
+}
+
 

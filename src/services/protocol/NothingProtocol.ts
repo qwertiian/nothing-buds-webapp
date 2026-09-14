@@ -121,12 +121,12 @@ export function parseAnc(rawData: Uint8Array): AncMode {
   if (rawData.length <= 9) return 'off';
   const ancStatus = rawData[9];
   switch (ancStatus) {
-    case 5: return 'high';
-    case 7: return 'mid';
-    case 3: return 'low';
-    case 1: return 'adaptive';
+    case 4: return 'high';
+    case 5: return 'off';
     case 2: return 'transparency';
-    case 4: return 'off';
+    case 3: return 'low';
+    case 7: return 'mid';
+    case 1: return 'adaptive';
     default: return 'off';
   }
 }
@@ -134,14 +134,56 @@ export function parseAnc(rawData: Uint8Array): AncMode {
 // ANC Mode to Packet Byte
 export function ancModeToByte(mode: AncMode): number {
   switch (mode) {
-    case 'high': return 0x05;
-    case 'mid': return 0x07;
-    case 'low': return 0x03;
-    case 'adaptive': return 0x01;
+    case 'high': return 0x04;
+    case 'off': return 0x05;
     case 'transparency': return 0x02;
-    case 'off': return 0x04;
+    case 'low': return 0x03;
+    case 'mid': return 0x07;
+    case 'adaptive': return 0x01;
   }
 }
+
+// Gesture protocol mappings
+export const GESTURE_TRIGGER_TO_BYTE: Record<string, number> = {
+  singleTap: 1,
+  doubleTap: 2,
+  tripleTap: 3,
+  tapAndHold: 7,
+  doubleTapAndHold: 9,
+};
+
+export const GESTURE_BYTE_TO_TRIGGER: Record<number, string> = {
+  1: 'singleTap',
+  2: 'doubleTap',
+  3: 'tripleTap',
+  7: 'tapAndHold',
+  9: 'doubleTapAndHold',
+};
+
+export const GESTURE_ACTION_TO_BYTE: Record<string, number> = {
+  none: 1,
+  play_pause: 2,
+  previous_track: 8,
+  next_track: 9,
+  anc_cycle: 10,
+  voice_assistant: 11,
+  volume_up: 18,
+  volume_down: 19,
+};
+
+export const GESTURE_BYTE_TO_ACTION: Record<number, string> = {
+  1: 'none',
+  2: 'play_pause',
+  8: 'previous_track',
+  9: 'next_track',
+  10: 'anc_cycle',
+  11: 'voice_assistant',
+  18: 'volume_up',
+  19: 'volume_down',
+  20: 'anc_cycle',
+  21: 'anc_cycle',
+  22: 'anc_cycle',
+};
 
 // Equalizer Preset Parser
 export function parseEq(rawData: Uint8Array): EqPreset {

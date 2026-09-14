@@ -10,10 +10,14 @@ import {
   eqPresetToByte, 
   buildCustomEqPayload, 
   parseFirmware, 
-  parseSerial 
+  parseSerial,
+  GESTURE_TRIGGER_TO_BYTE,
+  GESTURE_BYTE_TO_TRIGGER,
+  GESTURE_ACTION_TO_BYTE,
+  GESTURE_BYTE_TO_ACTION
 } from '../protocol/NothingProtocol';
-import { EarbudModel, EarbudState, AncMode, EqPreset, CustomEqSettings } from '../../models/types';
-import { SUPPORTED_DEVICES, findModelBySku } from '../../models/devices';
+import { EarbudModel, EarbudState, AncMode, EqPreset, CustomEqSettings, GestureConfig, GestureAction } from '../../models/types';
+import { SUPPORTED_DEVICES, findModelBySku, findModelByName } from '../../models/devices';
 
 const SPP_UUID = 'aeac4a03-dff5-498f-843a-34487cf133eb';
 
@@ -29,7 +33,7 @@ export class WebSerialManager {
     connected: false,
     isConnecting: false,
     isSimulator: false,
-    model: SUPPORTED_DEVICES[0],
+    model: SUPPORTED_DEVICES.find(d => d.id === 'cmf_buds_pro_2_blue') || SUPPORTED_DEVICES[0],
     battery: {
       left: 100,
       right: 100,
@@ -89,10 +93,45 @@ export class WebSerialManager {
     this.listeners.forEach(l => l(s));
   }
 
+  // Scan OS paired Bluetooth devices to auto-identify device name (e.g. "CMF Buds 2")
+  public async syncWithSystemBluetooth(): Promise<string | null> {
+    try {
+      const res = await fetch('/api/bluetooth/devices');
+      if (res.ok) {
+        const devices = await res.json();
+        if (Array.isArray(devices) && devices.length > 0) {
+          const matched = devices.find(d => d.FriendlyName && !d.FriendlyName.includes('Avrcp'));
+          const name = matched ? matched.FriendlyName : devices[0].FriendlyName;
+          if (name) {
+            const model = findModelByName(name);
+            this.state.model = model;
+            this.notify();
+            return name;
+          }
+        }
+      }
+    } catch {
+      // Ignore if running standalone without backend
+    }
+    return null;
+  }
+
+  // Auto-enable Windows Bluetooth service and radio
+  public async enableSystemBluetooth(): Promise<void> {
+    try {
+      await fetch('/api/bluetooth/enable', { method: 'POST' });
+    } catch {
+      // ignore
+    }
+  }
+
   public async tryAutoConnect(): Promise<boolean> {
     if (!this.isSupported()) return false;
     if (this.state.connected && this.port) return true;
     
+    // Check OS Bluetooth device list first
+    await this.syncWithSystemBluetooth();
+
     try {
       const serial = (navigator as any).serial;
       const ports = await serial.getPorts();
@@ -127,6 +166,12 @@ export class WebSerialManager {
       throw new Error('Web Serial API is not supported in this browser. Please use Chrome, Edge, Brave, or Opera.');
     }
 
+    // Automatically enable Windows Bluetooth radio & service
+    await this.enableSystemBluetooth();
+
+    // Check OS Bluetooth device name first
+    await this.syncWithSystemBluetooth();
+
     // Attempt auto-connect to pre-authorized port first
     const autoConnected = await this.tryAutoConnect();
     if (autoConnected) {
@@ -138,7 +183,7 @@ export class WebSerialManager {
 
     try {
       const serial = (navigator as any).serial;
-      // Filter specifically for Nothing/CMF SPP UUID so only the audio control port is shown
+      // Filter strictly for Nothing/CMF SPP UUID so only the audio control port appears
       this.port = await serial.requestPort({
         allowedBluetoothServiceClassIds: [SPP_UUID],
         filters: [{ bluetoothServiceClassId: SPP_UUID }],
@@ -213,6 +258,9 @@ export class WebSerialManager {
     await new Promise(r => setTimeout(r, 150));
 
     await this.sendCommand(COMMANDS.READ_EQ);
+    await new Promise(r => setTimeout(r, 150));
+
+    await this.sendCommand(COMMANDS.READ_GESTURES);
     await new Promise(r => setTimeout(r, 150));
 
     await this.sendCommand(COMMANDS.READ_FIRMWARE);
@@ -297,10 +345,8 @@ export class WebSerialManager {
             const year = serial.substring(6, 8);
             sku = (year === '22' || year === '23') ? '14' : '11200005';
           }
-          if (sku) {
-            const detectedModel = findModelBySku(sku);
-            this.state.model = detectedModel;
-          }
+          const detectedModel = findModelBySku(sku, serial);
+          this.state.model = detectedModel;
           this.notify();
         }
         break;
@@ -324,6 +370,32 @@ export class WebSerialManager {
         const eq = parseEq(raw);
         this.state.eqPreset = eq;
         this.notify();
+        break;
+      }
+      case RESPONSE_COMMANDS.GESTURE_RESP: {
+        if (raw.length > 8) {
+          const gestureCount = raw[8];
+          const newGestures = { ...this.state.gestures };
+          for (let i = 0; i < gestureCount; i++) {
+            const base = 9 + i * 4;
+            if (base + 3 < raw.length) {
+              const dev = raw[base];
+              const typ = raw[base + 2];
+              const act = raw[base + 3];
+              const earKey = dev === 2 ? 'left' : 'right';
+              const trigKey = GESTURE_BYTE_TO_TRIGGER[typ] as keyof GestureConfig;
+              const actKey = GESTURE_BYTE_TO_ACTION[act] as GestureAction;
+              if (earKey && trigKey && actKey) {
+                newGestures[earKey] = {
+                  ...newGestures[earKey],
+                  [trigKey]: actKey,
+                };
+              }
+            }
+          }
+          this.state.gestures = newGestures;
+          this.notify();
+        }
         break;
       }
       case RESPONSE_COMMANDS.FIRMWARE_RESP: {
@@ -400,6 +472,23 @@ export class WebSerialManager {
     this.state.lowLagMode = enabled;
     this.notify();
     await this.sendCommand(COMMANDS.SET_LATENCY, [enabled ? 0x01 : 0x02, 0x00]);
+  }
+
+  public async setGesture(ear: 'left' | 'right', trigger: keyof GestureConfig, action: GestureAction) {
+    this.state.gestures = {
+      ...this.state.gestures,
+      [ear]: {
+        ...this.state.gestures[ear],
+        [trigger]: action,
+      },
+    };
+    this.notify();
+
+    const devByte = ear === 'left' ? 0x02 : 0x03;
+    const trigByte = GESTURE_TRIGGER_TO_BYTE[trigger] || 2;
+    const actByte = GESTURE_ACTION_TO_BYTE[action] || 2;
+    const payload = [0x01, devByte, 0x01, trigByte, actByte];
+    await this.sendCommand(COMMANDS.SET_GESTURES, payload);
   }
 
   public async ringBud(ear: 'left' | 'right', ring: boolean) {

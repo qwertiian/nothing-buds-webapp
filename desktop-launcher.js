@@ -2,7 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,11 +28,45 @@ const MIME_TYPES = {
 // Check if dist exists, if not build it
 if (!fs.existsSync(DIST_DIR)) {
   console.log('Building project before launching desktop mode...');
-  // Vite dev server fallback or build
 }
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(DIST_DIR, req.url === '/' ? 'index.html' : req.url);
+  // Bluetooth OS Integration Endpoints
+  if (req.url === '/api/bluetooth/devices') {
+    if (process.platform === 'win32') {
+      const psCmd = `powershell -NoProfile -Command "Get-PnpDevice -Class Bluetooth | Where-Object FriendlyName -match 'Nothing|CMF|Buds|Ear' | Select-Object FriendlyName, InstanceId, Status | ConvertTo-Json -Compress"`;
+      exec(psCmd, (error, stdout) => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        try {
+          const parsed = JSON.parse(stdout || '[]');
+          const array = Array.isArray(parsed) ? parsed : [parsed];
+          res.end(JSON.stringify(array));
+        } catch {
+          res.end('[]');
+        }
+      });
+    } else {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end('[]');
+    }
+    return;
+  }
+
+  if (req.url === '/api/bluetooth/enable') {
+    if (process.platform === 'win32') {
+      const psCmd = `powershell -NoProfile -Command "Start-Service bthserv -ErrorAction SilentlyContinue"`;
+      exec(psCmd, () => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true }));
+      });
+    } else {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true }));
+    }
+    return;
+  }
+
+  let filePath = path.join(DIST_DIR, req.url === '/' ? 'index.html' : req.url.split('?')[0]);
 
   if (!fs.existsSync(filePath)) {
     // SPA fallback
@@ -91,4 +125,3 @@ server.listen(PORT, () => {
     console.log(`Open ${url} in your Chromium browser.`);
   }
 });
-
