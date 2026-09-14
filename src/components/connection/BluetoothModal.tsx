@@ -1,5 +1,5 @@
-import React from 'react';
-import { Bluetooth, RefreshCw, AlertCircle, X } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Bluetooth, RefreshCw, AlertCircle, X, ShieldCheck } from 'lucide-react';
 
 interface BluetoothModalProps {
   isOpen: boolean;
@@ -7,6 +7,7 @@ interface BluetoothModalProps {
   onConnect: () => void;
   isConnecting: boolean;
   error: string | null;
+  detectedName?: string;
 }
 
 export const BluetoothModal: React.FC<BluetoothModalProps> = ({
@@ -15,7 +16,15 @@ export const BluetoothModal: React.FC<BluetoothModalProps> = ({
   onConnect,
   isConnecting,
   error,
+  detectedName,
 }) => {
+  // Automatically enable Windows Bluetooth radio when connect modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetch('/api/bluetooth/enable', { method: 'POST' }).catch(() => {});
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const isBrowserSupported = typeof navigator !== 'undefined' && 'serial' in navigator;
@@ -37,6 +46,14 @@ export const BluetoothModal: React.FC<BluetoothModalProps> = ({
           </button>
         </div>
 
+        {/* Detected Device Badge */}
+        {detectedName && (
+          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-300 flex items-center gap-2.5 z-10">
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Windows Paired: <strong>{detectedName}</strong> detected</span>
+          </div>
+        )}
+
         {/* Error Alert */}
         {error && (
           <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-xs font-mono text-red-300 flex items-start gap-2.5 z-10">
@@ -52,9 +69,9 @@ export const BluetoothModal: React.FC<BluetoothModalProps> = ({
               1
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-mono text-[var(--text-main)] font-medium">Pair with your PC first</span>
+              <span className="text-xs font-mono text-[var(--text-main)] font-medium">Automatic Bluetooth Activation</span>
               <span className="text-[11px] font-mono text-[var(--text-sub)] mt-0.5">
-                Ensure your Nothing or CMF earbuds are paired via your Windows / macOS / Linux Bluetooth settings.
+                Bluetooth radio is automatically activated on your PC. Ensure your Nothing or CMF earbuds are taken out of their case.
               </span>
             </div>
           </div>
@@ -64,9 +81,9 @@ export const BluetoothModal: React.FC<BluetoothModalProps> = ({
               2
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-mono text-[var(--text-main)] font-medium">Select your device</span>
+              <span className="text-xs font-mono text-[var(--text-main)] font-medium">Single-Click Permission</span>
               <span className="text-[11px] font-mono text-[var(--text-sub)] mt-0.5">
-                Click &quot;Connect via Bluetooth&quot; below and choose your earbuds from the device picker.
+                Click &quot;Connect via Bluetooth&quot; below and select your earbuds to sync live battery, ANC & EQ.
               </span>
             </div>
           </div>
@@ -92,7 +109,7 @@ export const BluetoothModal: React.FC<BluetoothModalProps> = ({
             {isConnecting ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Searching for Earbuds...</span>
+                <span>Opening Bluetooth Port...</span>
               </>
             ) : (
               <>

@@ -70,6 +70,8 @@ export class WebSerialManager {
       },
     },
     ringing: { left: false, right: false },
+    systemDeviceName: undefined,
+    osBluetoothConnected: false,
   };
 
   public isSupported(): boolean {
@@ -93,7 +95,7 @@ export class WebSerialManager {
     this.listeners.forEach(l => l(s));
   }
 
-  // Scan OS paired Bluetooth devices to auto-identify device name (e.g. "CMF Buds 2")
+  // Poll Windows/macOS paired Bluetooth devices
   public async syncWithSystemBluetooth(): Promise<string | null> {
     try {
       const res = await fetch('/api/bluetooth/devices');
@@ -103,20 +105,25 @@ export class WebSerialManager {
           const matched = devices.find(d => d.FriendlyName && !d.FriendlyName.includes('Avrcp'));
           const name = matched ? matched.FriendlyName : devices[0].FriendlyName;
           if (name) {
+            this.state.systemDeviceName = name;
+            this.state.osBluetoothConnected = matched ? matched.Status === 'OK' : true;
             const model = findModelByName(name);
             this.state.model = model;
             this.notify();
             return name;
           }
+        } else {
+          this.state.osBluetoothConnected = false;
+          this.notify();
         }
       }
     } catch {
-      // Ignore if running standalone without backend
+      // Standalone web without local backend
     }
     return null;
   }
 
-  // Auto-enable Windows Bluetooth service and radio
+  // Turn on Windows Bluetooth service and radio
   public async enableSystemBluetooth(): Promise<void> {
     try {
       await fetch('/api/bluetooth/enable', { method: 'POST' });
@@ -125,71 +132,14 @@ export class WebSerialManager {
     }
   }
 
-  public async tryAutoConnect(): Promise<boolean> {
-    if (!this.isSupported()) return false;
-    if (this.state.connected && this.port) return true;
-    
-    // Check OS Bluetooth device list first
-    await this.syncWithSystemBluetooth();
-
+  private async openExistingPort(targetPort: any): Promise<boolean> {
     try {
-      const serial = (navigator as any).serial;
-      const ports = await serial.getPorts();
-      
-      if (ports && ports.length > 0) {
-        this.state.isConnecting = true;
-        this.notify();
-        
-        this.port = ports[0];
-        await this.port.open({ baudRate: 9600 });
-        
-        this.state.connected = true;
-        this.state.isConnecting = false;
-        this.notify();
-        
-        this.startReading();
-        this.initializeDevice();
-        return true;
-      }
-    } catch (err) {
-      this.state.connected = false;
-      this.state.isConnecting = false;
-      this.port = null;
+      this.state.isConnecting = true;
       this.notify();
-    }
-    
-    return false;
-  }
 
-  public async connect(): Promise<boolean> {
-    if (!this.isSupported()) {
-      throw new Error('Web Serial API is not supported in this browser. Please use Chrome, Edge, Brave, or Opera.');
-    }
-
-    // Automatically enable Windows Bluetooth radio & service
-    await this.enableSystemBluetooth();
-
-    // Check OS Bluetooth device name first
-    await this.syncWithSystemBluetooth();
-
-    // Attempt auto-connect to pre-authorized port first
-    const autoConnected = await this.tryAutoConnect();
-    if (autoConnected) {
-      return true;
-    }
-
-    this.state.isConnecting = true;
-    this.notify();
-
-    try {
-      const serial = (navigator as any).serial;
-      // Filter strictly for Nothing/CMF SPP UUID so only the audio control port appears
-      this.port = await serial.requestPort({
-        allowedBluetoothServiceClassIds: [SPP_UUID],
-        filters: [{ bluetoothServiceClassId: SPP_UUID }],
-      });
-
+      this.port = targetPort;
       await this.port.open({ baudRate: 9600 });
+
       this.state.connected = true;
       this.state.isConnecting = false;
       this.notify();
@@ -197,7 +147,67 @@ export class WebSerialManager {
       this.startReading();
       this.initializeDevice();
       return true;
-    } catch (err) {
+    } catch (err: any) {
+      this.state.connected = false;
+      this.state.isConnecting = false;
+      this.port = null;
+      this.notify();
+      throw err;
+    }
+  }
+
+  public async tryAutoConnect(): Promise<boolean> {
+    if (!this.isSupported()) return false;
+    if (this.state.connected && this.port) return true;
+
+    try {
+      const serial = (navigator as any).serial;
+      const ports = await serial.getPorts();
+
+      if (ports && ports.length > 0) {
+        return await this.openExistingPort(ports[0]);
+      }
+    } catch {
+      // Permission not yet granted or port busy
+    }
+
+    return false;
+  }
+
+  // DIRECT USER ACTIVATION CONNECT (Must not perform async await before requestPort!)
+  public async connect(): Promise<boolean> {
+    if (!this.isSupported()) {
+      throw new Error('Web Serial API is not supported in this browser. Please use Chrome, Edge, Brave, or Opera.');
+    }
+
+    if (this.state.connected && this.port) {
+      return true;
+    }
+
+    const serial = (navigator as any).serial;
+
+    // Check if port already exists in memory
+    try {
+      const ports = await serial.getPorts();
+      if (ports && ports.length > 0) {
+        return await this.openExistingPort(ports[0]);
+      }
+    } catch {
+      // continue to requestPort
+    }
+
+    // Direct synchronous user activation requestPort
+    this.state.isConnecting = true;
+    this.notify();
+
+    try {
+      this.port = await serial.requestPort({
+        allowedBluetoothServiceClassIds: [SPP_UUID],
+        filters: [{ bluetoothServiceClassId: SPP_UUID }],
+      });
+
+      return await this.openExistingPort(this.port);
+    } catch (err: any) {
       this.state.connected = false;
       this.state.isConnecting = false;
       this.notify();

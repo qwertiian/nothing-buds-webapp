@@ -91,6 +91,8 @@ export interface EarbudState {
     left: boolean;
     right: boolean;
   };
+  systemDeviceName?: string;
+  osBluetoothConnected?: boolean;
 }
 
 export type AppTheme = 

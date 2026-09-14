@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { EarbudState, EarbudModel, AncMode, EqPreset, CustomEqSettings, AppTheme, GestureConfig } from '../models/types';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { EarbudState, EarbudModel, AncMode, EqPreset, CustomEqSettings, AppTheme, GestureConfig, GestureAction } from '../models/types';
 import { webSerialManager } from '../services/bluetooth/WebSerialManager';
 import { soundFx } from '../services/audio/SoundSynthesizer';
 
@@ -9,6 +9,7 @@ export function useEarbudController() {
     return (localStorage.getItem('app_theme') as AppTheme) || 'nothing-dark';
   });
   const [error, setError] = useState<string | null>(null);
+  const isConnectingRef = useRef(false);
 
   // Subscribe to WebSerialManager state updates
   useEffect(() => {
@@ -16,12 +17,28 @@ export function useEarbudController() {
       setState(newState);
     });
 
-    // Auto-detect and connect to already paired/granted buds on app startup
+    // 1. Initial immediate check for OS Bluetooth & pre-granted serial ports
+    webSerialManager.syncWithSystemBluetooth().catch(() => {});
     if (webSerialManager.isSupported()) {
       webSerialManager.tryAutoConnect().catch(() => {});
     }
 
-    return () => unsubscribe();
+    // 2. Continuous 2.5s monitor for Windows Bluetooth connects & disconnects
+    // When the user opens buds lid, Windows connects -> app auto-connects within 2.5s
+    const timer = setInterval(async () => {
+      if (!isConnectingRef.current) {
+        await webSerialManager.syncWithSystemBluetooth();
+        const currentState = webSerialManager.getState();
+        if (currentState.osBluetoothConnected && !currentState.connected && webSerialManager.isSupported()) {
+          await webSerialManager.tryAutoConnect().catch(() => {});
+        }
+      }
+    }, 2500);
+
+    return () => {
+      unsubscribe();
+      clearInterval(timer);
+    };
   }, []);
 
   // Update theme class on root element
@@ -42,16 +59,24 @@ export function useEarbudController() {
     setTheme(newTheme);
   }, []);
 
-  // Connect to real Bluetooth earbuds
+  // Prepare Bluetooth radio before user gesture (turns on Windows radio if off)
+  const prepareBluetoothRadio = useCallback(() => {
+    webSerialManager.enableSystemBluetooth().catch(() => {});
+  }, []);
+
+  // Connect to real Bluetooth earbuds (Clean, direct user activation)
   const connectBluetooth = useCallback(async () => {
     setError(null);
     soundFx.playClick(1000);
+    isConnectingRef.current = true;
     try {
       await webSerialManager.connect();
     } catch (err: any) {
       if (err.name !== 'NotFoundError') {
         setError(err.message || 'Failed to connect via Bluetooth');
       }
+    } finally {
+      isConnectingRef.current = false;
     }
   }, []);
 
@@ -104,7 +129,7 @@ export function useEarbudController() {
     setState(prev => ({ ...prev, dualConnection: enabled }));
   }, []);
 
-  const setGesture = useCallback((ear: 'left' | 'right', trigger: keyof GestureConfig, action: GestureConfig[keyof GestureConfig]) => {
+  const setGesture = useCallback((ear: 'left' | 'right', trigger: keyof GestureConfig, action: GestureAction) => {
     soundFx.playClick(750);
     webSerialManager.setGesture(ear, trigger, action);
   }, []);
@@ -127,6 +152,7 @@ export function useEarbudController() {
     theme,
     error,
     changeTheme,
+    prepareBluetoothRadio,
     connectBluetooth,
     disconnectBluetooth,
     setModel,

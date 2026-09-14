@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 
 const PORT = 5173;
 const DIST_DIR = path.join(__dirname, 'dist');
+const HELPER_SCRIPT = path.join(__dirname, 'scripts', 'bluetooth-helper.ps1');
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -31,10 +32,10 @@ if (!fs.existsSync(DIST_DIR)) {
 }
 
 const server = http.createServer((req, res) => {
-  // Bluetooth OS Integration Endpoints
+  // Bluetooth OS Integration Endpoints (Nothing & CMF Buds only)
   if (req.url === '/api/bluetooth/devices') {
     if (process.platform === 'win32') {
-      const psCmd = `powershell -NoProfile -Command "Get-PnpDevice -Class Bluetooth | Where-Object FriendlyName -match 'Nothing|CMF|Buds|Ear' | Select-Object FriendlyName, InstanceId, Status | ConvertTo-Json -Compress"`;
+      const psCmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${HELPER_SCRIPT}" -Action devices`;
       exec(psCmd, (error, stdout) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         try {
@@ -54,14 +55,28 @@ const server = http.createServer((req, res) => {
 
   if (req.url === '/api/bluetooth/enable') {
     if (process.platform === 'win32') {
-      const psCmd = `powershell -NoProfile -Command "Start-Service bthserv -ErrorAction SilentlyContinue"`;
-      exec(psCmd, () => {
+      const psCmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${HELPER_SCRIPT}" -Action enable`;
+      exec(psCmd, (error, stdout) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true }));
+        res.end(stdout || JSON.stringify({ success: true }));
       });
     } else {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ success: true }));
+    }
+    return;
+  }
+
+  if (req.url === '/api/bluetooth/status') {
+    if (process.platform === 'win32') {
+      const psCmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${HELPER_SCRIPT}" -Action status`;
+      exec(psCmd, (error, stdout) => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(stdout || JSON.stringify({ radio: 'On', service: 'Running' }));
+      });
+    } else {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ radio: 'On', service: 'Running' }));
     }
     return;
   }

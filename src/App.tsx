@@ -9,7 +9,7 @@ import { GestureStudio } from './components/gestures/GestureStudio';
 import { DeviceSettings } from './components/settings/DeviceSettings';
 import { PokemonCompanion } from './components/themes/PokemonCompanion';
 import { BluetoothModal } from './components/connection/BluetoothModal';
-import { Sliders, Volume2, Gamepad2, Sparkles, Settings, Github, ExternalLink, Bluetooth } from 'lucide-react';
+import { Sliders, Volume2, Gamepad2, Sparkles, Settings, Github, ExternalLink, Bluetooth, ShieldCheck } from 'lucide-react';
 
 export function App() {
   const {
@@ -17,6 +17,7 @@ export function App() {
     theme,
     error,
     changeTheme,
+    prepareBluetoothRadio,
     connectBluetooth,
     disconnectBluetooth,
     setModel,
@@ -35,6 +36,11 @@ export function App() {
   const [activeTab, setActiveTab] = useState<'controls' | 'eq' | 'gestures' | 'settings' | 'pokemon'>('controls');
   const [showConnectModal, setShowConnectModal] = useState(false);
 
+  const handleOpenConnect = () => {
+    prepareBluetoothRadio();
+    setShowConnectModal(true);
+  };
+
   return (
     <div className="min-h-screen bg-[var(--bg-app)] text-[var(--text-main)] flex flex-col selection:bg-[var(--accent-color)] selection:text-white relative transition-colors duration-300">
       {/* Top Navigation Bar */}
@@ -43,7 +49,7 @@ export function App() {
         onThemeChange={changeTheme}
         isConnected={state.connected}
         isConnecting={state.isConnecting}
-        onConnect={() => setShowConnectModal(true)}
+        onConnect={handleOpenConnect}
         onDisconnect={disconnectBluetooth}
         activeModel={state.model}
         onSelectModel={setModel}
@@ -57,24 +63,32 @@ export function App() {
           <div className="w-full p-4 sm:p-5 rounded-2xl theme-card border-dashed flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[var(--border-dim)] flex items-center justify-center text-[var(--accent-color)] shrink-0">
-                <Bluetooth size={20} />
+                {state.osBluetoothConnected ? <ShieldCheck size={22} className="text-cyan-400" /> : <Bluetooth size={20} />}
               </div>
               <div className="flex flex-col">
                 <span className="font-mono text-xs sm:text-sm font-semibold text-[var(--text-main)]">
-                  Connect your Nothing or CMF Earbuds
+                  {state.osBluetoothConnected && state.systemDeviceName
+                    ? `${state.systemDeviceName} Connected on Windows`
+                    : 'Connect your Nothing or CMF Earbuds'}
                 </span>
                 <span className="text-[11px] font-mono text-[var(--text-sub)]">
-                  Pair your buds in Windows / macOS Bluetooth settings, then click connect to sync ANC, EQ & battery.
+                  {state.osBluetoothConnected && state.systemDeviceName
+                    ? 'Device active on your PC. Click below to grant one-time permission to sync live ANC, EQ & battery levels.'
+                    : 'Take your earbuds out of their case to connect, or click below to scan and pair.'}
                 </span>
               </div>
             </div>
 
             <button
-              onClick={() => setShowConnectModal(true)}
+              onClick={handleOpenConnect}
               disabled={state.isConnecting}
               className="px-5 py-2.5 rounded-xl bg-[var(--accent-color)] hover:opacity-90 text-white font-mono text-xs font-semibold shadow-lg transition whitespace-nowrap"
             >
-              {state.isConnecting ? 'Searching...' : 'Connect Buds Now'}
+              {state.isConnecting 
+                ? 'Connecting...' 
+                : state.osBluetoothConnected && state.systemDeviceName 
+                ? `Sync ${state.systemDeviceName}` 
+                : 'Connect Buds Now'}
             </button>
           </div>
         )}
@@ -86,6 +100,8 @@ export function App() {
           firmwareVersion={state.firmwareVersion}
           onSelectModel={setModel}
           isConnected={state.connected}
+          osBluetoothConnected={state.osBluetoothConnected}
+          systemDeviceName={state.systemDeviceName}
         />
 
         {/* Battery Gauges */}
@@ -234,11 +250,12 @@ export function App() {
         isOpen={showConnectModal}
         onClose={() => setShowConnectModal(false)}
         onConnect={() => {
-          connectBluetooth();
           setShowConnectModal(false);
+          connectBluetooth();
         }}
         isConnecting={state.isConnecting}
         error={error}
+        detectedName={state.systemDeviceName}
       />
     </div>
   );

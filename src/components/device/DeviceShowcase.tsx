@@ -10,6 +10,8 @@ interface DeviceShowcaseProps {
   firmwareVersion: string;
   onSelectModel: (model: EarbudModel) => void;
   isConnected: boolean;
+  osBluetoothConnected?: boolean;
+  systemDeviceName?: string;
 }
 
 export const DeviceShowcase: React.FC<DeviceShowcaseProps> = ({
@@ -18,6 +20,8 @@ export const DeviceShowcase: React.FC<DeviceShowcaseProps> = ({
   firmwareVersion,
   onSelectModel,
   isConnected,
+  osBluetoothConnected,
+  systemDeviceName,
 }) => {
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [activeItem3d, setActiveItem3d] = useState<'left' | 'case' | 'right' | null>(null);
@@ -208,7 +212,12 @@ export const DeviceShowcase: React.FC<DeviceShowcaseProps> = ({
           {isConnected ? (
             <span className="flex items-center gap-1.5 text-[11px] px-2.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Connected (Hardware)
+              Connected (Hardware Sync)
+            </span>
+          ) : osBluetoothConnected ? (
+            <span className="flex items-center gap-1.5 text-[11px] px-2.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              Windows Paired ({systemDeviceName || 'Ready'})
             </span>
           ) : (
             <span className="flex items-center gap-1.5 text-[11px] px-2.5 py-0.5 rounded border border-[var(--border-dim)] text-[var(--text-sub)]">
