@@ -41,12 +41,38 @@ export function useEarbudController() {
     };
   }, []);
 
-  // Update theme class on root element
+  // Update theme class on root element and body
   useEffect(() => {
     localStorage.setItem('app_theme', theme);
     const root = document.documentElement;
-    root.classList.remove('theme-nothing-dark', 'theme-pokedex', 'theme-cyberpunk', 'theme-lofi');
+    const body = document.body;
+    const allThemeClasses = [
+      'theme-nothing-dark',
+      'theme-nothing-light',
+      'theme-pokedex',
+      'theme-pokemon-pokedex',
+      'theme-cyberpunk',
+      'theme-cyberpunk-neon',
+      'theme-lofi',
+      'theme-lofi-vibes',
+    ];
+    root.classList.remove(...allThemeClasses);
+    body.classList.remove(...allThemeClasses);
+
     root.classList.add(`theme-${theme}`);
+    body.classList.add(`theme-${theme}`);
+
+    // Add shorthand aliases for full compatibility
+    if (theme === 'pokemon-pokedex') {
+      root.classList.add('theme-pokedex');
+      body.classList.add('theme-pokedex');
+    } else if (theme === 'cyberpunk-neon') {
+      root.classList.add('theme-cyberpunk');
+      body.classList.add('theme-cyberpunk');
+    } else if (theme === 'lofi-vibes') {
+      root.classList.add('theme-lofi');
+      body.classList.add('theme-lofi');
+    }
   }, [theme]);
 
   // Play tactile audio feedback on theme changes

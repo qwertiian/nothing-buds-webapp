@@ -20,7 +20,8 @@
   --accent-hover: #b31218;
 }
 
-.theme-pokedex {
+.theme-pokedex,
+.theme-pokemon-pokedex {
   --bg-app: #071507;
   --bg-surface: #0e2b0e;
   --bg-surface-elevated: #153d15;
@@ -35,7 +36,8 @@
   --accent-hover: #a5cc13;
 }
 
-.theme-cyberpunk {
+.theme-cyberpunk,
+.theme-cyberpunk-neon {
   --bg-app: #0a0014;
   --bg-surface: #140026;
   --bg-surface-elevated: #20003f;
@@ -50,7 +52,8 @@
   --accent-hover: #ff3399;
 }
 
-.theme-lofi {
+.theme-lofi,
+.theme-lofi-vibes {
   --bg-app: #181412;
   --bg-surface: #241d19;
   --bg-surface-elevated: #302722;
@@ -123,15 +126,18 @@
   background-position: -19px -19px;
 }
 
-.theme-pokedex .bg-dot-grid {
+.theme-pokedex .bg-dot-grid,
+.theme-pokemon-pokedex .bg-dot-grid {
   background-image: radial-gradient(rgba(139, 172, 15, 0.18) 1px, transparent 0);
 }
 
-.theme-cyberpunk .bg-dot-grid {
+.theme-cyberpunk .bg-dot-grid,
+.theme-cyberpunk-neon .bg-dot-grid {
   background-image: radial-gradient(rgba(0, 240, 255, 0.15) 1px, transparent 0);
 }
 
-.theme-lofi .bg-dot-grid {
+.theme-lofi .bg-dot-grid,
+.theme-lofi-vibes .bg-dot-grid {
   background-image: radial-gradient(rgba(245, 230, 211, 0.12) 1px, transparent 0);
 }
 
