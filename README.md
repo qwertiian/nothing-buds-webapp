@@ -1,158 +1,147 @@
-# Ear (OS) — Nothing & CMF Buds Companion
+# Ear (OS) — Nothing & CMF Buds Desktop & Web Companion
 
 <p align="center">
-  <img src="/public/assets/anc_on_icon.svg" width="80" height="80" alt="Ear (OS) Logo" />
+  <img src="https://raw.githubusercontent.com/qwertiian/nothing-buds-webapp/main/public/assets/anc_on_icon.svg" width="90" height="90" alt="Ear (OS) Logo" />
 </p>
 
 <p align="center">
-  <strong>Cross-platform Desktop & Web companion application for Nothing & CMF audio products.</strong><br>
-  Engineered with authentic Nothing OS aesthetics, real-time Bluetooth SPP communication, full audio & ANC controls, and secret Pokémon Easter-egg themes.
+  <strong>The unofficial, full-featured desktop companion for Nothing & CMF earbuds.</strong><br>
+  Control your earbuds directly from your PC without ever touching your phone.
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Web-black?style=for-the-badge" alt="Platforms" />
-  <img src="https://img.shields.io/badge/Framework-React%2018%20%2B%20Vite%20%2B%20TypeScript-blue?style=for-the-badge" alt="Stack" />
-  <img src="https://img.shields.io/badge/Style-Nothing%20OS%20Dot--Matrix-red?style=for-the-badge" alt="Style" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
+  <a href="https://nothing-buds-webapp.vercel.app/">
+    <img src="https://img.shields.io/badge/LIVE%20APP-nothing--buds--webapp.vercel.app-d71920?style=for-the-badge&logo=vercel&logoColor=white" alt="Live App" />
+  </a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Web-black?style=flat-square" alt="Platforms" />
+  <img src="https://img.shields.io/badge/Protocol-Bluetooth%20SPP%20RFCOMM-blue?style=flat-square" alt="Protocol" />
+  <img src="https://img.shields.io/badge/PWA-Installable%20Desktop%20App-purple?style=flat-square" alt="PWA" />
+  <img src="https://img.shields.io/badge/Design-Nothing%20OS%20Dot--Matrix-red?style=flat-square" alt="Design" />
+  <img src="https://img.shields.io/badge/Privacy-100%25%20Offline%20%26%20Private-green?style=flat-square" alt="Privacy" />
 </p>
 
 ---
 
-## 🚀 Key Features
+## 🌐 Launch & Install Directly
 
-### 🎧 Complete Hardware Control Suite
-- **Active Noise Cancellation (ANC)**:
-  - 3-State Master Selector: **Noise Cancellation**, **Transparency**, and **Off**.
-  - 4 Intensity Modes: **High**, **Mid**, **Low**, and **Adaptive / Smart ANC**.
-  - **Personalized ANC** toggle adapted to individual ear canal geometry.
-  - **Ear Tip Fit Test** calibration diagnostic.
-- **Studio Equalizer**:
-  - 4 Tuned Presets: **Balanced**, **More Bass**, **More Treble**, and **Voice**.
-  - **Custom 3-Band Graphic EQ** with live SVG frequency response curve.
-  - **Audition Sound Button**: Auditions your custom tuning in real time using the Web Audio API synthesizer.
-  - **Ultra Bass Technology**: Dynamic low-end sub-bass enhancement (Levels 1 to 5).
-- **Custom Gestures & Pinch Controls**:
-  - Independent mapping for **Left** and **Right** earbuds.
-  - Single Tap / Pinch, Double Tap, Triple Tap, Tap & Hold, and Double Tap & Hold.
-  - Configurable actions: Play/Pause, Next Track, Previous Track, Voice Assistant, Volume Up/Down, Noise Control Toggle.
-- **Device & Power Status**:
-  - Real-time battery gauges for **Left Earbud**, **Right Earbud**, and **Charging Case**.
-  - Active charging indicator badges (`CHG`).
-  - Serial number and firmware version inspector.
-- **Advanced Settings**:
-  - **In-Ear Detection**: Automatic pause when removed, resume when reinserted.
-  - **Low Lag Mode**: Reduces Bluetooth latency down to sub-120ms for gaming and video.
-  - **Dual Connection**: Multipoint management across two host devices.
-  - **Find My Earbuds**: Loud multi-frequency radar sirens to locate lost buds.
+You don't need to clone any repositories or install software dependencies. Launch and install directly from your browser:
+
+### 👉 **[Open Ear (OS) Live Web App](https://nothing-buds-webapp.vercel.app/)**
+
+### 💻 How to Install as a Standalone Windows Desktop App:
+1. Open **[https://nothing-buds-webapp.vercel.app/](https://nothing-buds-webapp.vercel.app/)** in **Google Chrome**, **Microsoft Edge**, or **Brave**.
+2. Click the **`[ INSTALL APP ]`** button in the top banner or navigation bar (or click the **Install icon** `[📥/🖥️]` on the right side of your browser's address bar).
+3. Click **"Install"** in the browser prompt.
+4. **Done!** Ear (OS) launches immediately in its own **dedicated, borderless window**, pins to your **Windows Taskbar**, and adds a shortcut to your **Desktop** and **Start Menu**.
 
 ---
 
-## 🎮 Secret Pokémon Easter-Egg Themes
-Did you know? **Nothing's audio engineering team secretly names all earbud hardware projects after Pokémon!**
+## ❓ Why Ear (OS)? The Problem It Solves
 
-Ear (OS) features a built-in **Pokédex Archive Mode**:
-- **8-Bit Dot-Matrix Theme**: Classic GameBoy green LCD styling (`#8bac0f`) with CRT scanline textures.
-- **Animated Pixel Sprites**: Shows the animated companion corresponding to your connected earbuds:
-  - **Nothing Ear (2024)**: *Entei* (#244)
-  - **Nothing Ear (a)**: *Cleffa* (#173)
-  - **CMF Buds Pro 2**: *Espeon* (#196)
-  - **Nothing Ear (2)**: *Lugia* / *Darkrai* (#249 / #491)
-  - **Nothing Ear (stick)**: *Togepi* (#175)
-  - **Nothing Ear (1)**: *Mew* (#151)
-  - **CMF Buds Pro**: *Corsola* (#222)
-  - **CMF Buds**: *Donphan* (#232)
-  - **CMF Neckband Pro**: *Crobat* (#169)
-  - **Nothing Ear (open)**: *Flaaffy* (#180)
-- **8-Bit Sound FX**: Retro chimes and cries synthesized via Web Audio API.
-- **Spec Battle Cards**: HP mapped to Battery, Noise Shield mapped to ANC dB, and Speed mapped to Latency.
+Nothing and CMF make some of the best wireless earbuds in the world. However, **Nothing does not offer an official desktop application for Windows, macOS, or Linux.**
+
+When working, gaming, or attending video meetings on your PC:
+- ❌ You have to unlock your phone and launch the mobile app just to switch noise cancellation modes.
+- ❌ You cannot check earbud and case battery levels from your desktop.
+- ❌ You cannot adjust equalizer presets (e.g., boosting vocal clarity for a Teams call or increasing bass for Spotify) without reaching for your phone.
+
+**Ear (OS) solves this completely.** By utilizing the modern **Web Serial / Web Bluetooth SPP API**, Ear (OS) establishes a direct bidirectional hardware control link between your computer and your earbuds. Change settings on your desktop and the earbud hardware DSP registers update instantly.
 
 ---
 
-## 💻 Cross-Platform Compatibility
+## ✨ Core Features
 
-| Operating System | Browser Support | Native Desktop Mode |
-| :--- | :--- | :--- |
-| **Windows 10 / 11** | Google Chrome, Microsoft Edge, Brave, Opera, Arc | ✅ Standalone App Window (`run-desktop.bat`) |
-| **macOS (Intel & Apple Silicon)** | Google Chrome, Brave, Edge, Arc | ✅ Chromium PWA / Desktop App |
-| **Linux (Ubuntu, Arch, Fedora)** | Google Chrome, Brave, Chromium | ✅ Native Desktop Window (`npm start`) |
-| **ChromeOS / Android** | Chrome | ✅ Web App & PWA Install |
+### 🎧 Active Noise Cancellation (ANC)
+- **3-Way Master Switch**: Seamlessly toggle between **Noise Cancellation**, **Transparency**, and **Off**.
+- **4 Intensity Profiles**: Switch between **High**, **Mid**, **Low**, and **Adaptive Smart ANC**.
+- **Personalized Hearing ANC**: Toggle custom algorithmic noise profiling adapted to individual ear geometry.
+- **Hardware Synced**: No UI lag or snap-back — states are validated and locked on hardware.
 
-> **Note**: Bluetooth communication uses the standard **Web Serial API** (Bluetooth Serial Port Profile / SPP) on Chromium browsers without requiring custom drivers or administrator privileges.
+### 🎛️ Studio Equalizer & DSP Curve
+- **4 Master Presets**: **Balanced** (studio tuning), **More Bass** (+4dB punch), **More Treble** (crisp acoustic highs), and **Voice** (podcasts & calls).
+- **Custom 3-Band Equalizer**: Live Bass, Mid, and Treble sliders that directly reflash earbud hardware DSP registers.
+- **Live Curve Visualizer**: Real-time SVG frequency response curve graph reflecting your exact tuning.
+- **Ultra Bass Technology**: Dynamic low-end sub-bass enhancement with adjustable wire intensity (Levels 1 to 5).
+- **Audition Synthesizer**: Preview acoustic frequency profiles directly through Web Audio synthesis.
 
----
+### 🔋 Real-Time Battery Gauges
+- **Triple-Channel Battery Monitoring**: Dedicated circular gauges for **Left Earbud**, **Right Earbud**, and **Charging Case**.
+- **Active Charging Status**: Visual `CHG` indicators when earbuds or case are actively charging.
+- **Smart Case Memory**: Retains accurate case battery status even when earbuds are in-ear and the lid is closed.
 
-## 📦 Getting Started
+### ⚙️ Hardware Settings & Diagnostics
+- **In-Ear Detection**: Automatically pauses playback when an earbud is removed, resuming when reinserted.
+- **Low Lag Mode**: Drops Bluetooth audio transmission latency to sub-120ms for competitive PC gaming and video sync.
+- **Find My Earbuds**: Triggers alternating high-frequency radar beacon chimes on either bud to locate misplaced earbuds.
+- **Firmware & Serial Inspector**: Displays hardware serial number and installed firmware version.
 
-### Prerequisites
-- Node.js 18+ and npm installed.
+### 🎨 4 Dynamic UI Themes
+Switch themes on the fly via the top navigation palette:
+- 🔴 **Nothing Dark**: Iconic Nothing glyph red (`#d71920`), deep obsidian backgrounds (`#0a0a0a`), and dot-matrix typography.
+- 🟢 **Pokédex 8-Bit**: Authentic retro Game Boy DMG green screen (`#8bac0f`) with CRT scanlines and synthesized 8-bit sound effects.
+- 🟣 **Cyberpunk Neon**: High-contrast electric cyan (`#00f0ff`), neon magenta (`#ff007f`), and deep violet glass panels (`#0a0014`).
+- ☕ **Lofi Vibes**: Warm cozy espresso (`#181412`), creamy parchment text (`#f5e6d3`), and mellow terracotta accents (`#e07a5f`).
 
-### Quick Run (Web Development Server)
-```bash
-# Clone repository
-git clone https://github.com/qwertiian/nothing-buds-webapp.git
-cd nothing-buds-webapp
-
-# Install dependencies
-npm install
-
-# Start local dev server
-npm run dev
-```
-
-### Launch as Standalone Desktop App
-On Windows, simply double-click **`run-desktop.bat`**, or run:
-```bash
-npm run build
-npm start
-```
-This starts the local runner and launches the application in dedicated native desktop window mode (`--app`).
-
----
-
-## 🛠️ Project Architecture
-
-```
-nothing-buds-webapp/
-├── public/
-│   ├── assets/              # Device renders (Ear 1, 2, (a), CMF Buds), icons, ANC graphics
-│   ├── fonts/               # Authentic Nothing fonts: NDOT 55, Space Grotesk, Lettera Mono
-│   └── manifest.json        # PWA configuration
-├── src/
-│   ├── components/
-│   │   ├── anc/             # AncStudio, Noise Cancellation, Fit Test
-│   │   ├── battery/         # BatteryCard with animated circular SVG gauges
-│   │   ├── connection/      # BluetoothModal and pairing instructions
-│   │   ├── device/          # DeviceShowcase with 3D floating perspective renders
-│   │   ├── eq/              # EqualizerStudio, Custom 3-Band EQ, Ultra Bass
-│   │   ├── gestures/        # GestureStudio and tap/pinch mapping
-│   │   ├── layout/          # Navbar, Model Quick Switcher, Theme Switcher
-│   │   ├── settings/        # In-Ear Detection, Low Lag Mode, Find My Buds
-│   │   └── themes/          # PokemonCompanion 8-bit Pokédex card & sound FX
-│   ├── hooks/
-│   │   └── useEarbudController.ts  # Master hook uniting simulator and hardware
-│   ├── models/
-│   │   ├── devices.ts       # Registry of Nothing/CMF models and Pokémon codenames
-│   │   └── types.ts         # EarbudState, AncMode, EqPreset, GestureAction
-│   ├── services/
-│   │   ├── audio/           # SoundSynthesizer (clicks, chirps, 8-bit sounds)
-│   │   ├── bluetooth/       # WebSerialManager (Bluetooth SPP stream handler)
-│   │   ├── protocol/        # NothingProtocol (Framing, CRC-16, command decoders)
-│   │   └── simulator/       # EarbudSimulator (100% offline responsive simulation)
-│   ├── styles/
-│   │   ├── fonts.css        # Font-face declarations
-│   │   └── index.css        # Tailwind and Nothing OS design tokens
-│   ├── App.tsx              # Master Application Layout
-│   └── main.tsx             # React DOM entry point
-├── desktop-launcher.js      # Cross-platform native window launcher
-├── run-desktop.bat          # 1-Click Windows launcher
-└── package.json
-```
+### 👾 The Secret Pokédex Archive
+Nothing's engineering team internally codenames their audio projects after Pokémon! Ear (OS) includes a dedicated **Pokédex Archive** that automatically pairs your connected model with its engineering codename:
+- **CMF Buds 2**: *Donphan* (#232)
+- **CMF Buds Pro 2**: *Espeon* (#196)
+- **Nothing Ear (2024)**: *Entei* (#244)
+- **Nothing Ear (a)**: *Cleffa* (#173)
+- **Nothing Ear (2)**: *Lugia* (#249)
+- **Nothing Ear (1)**: *Mew* (#151)
+- **Nothing Ear (stick)**: *Togepi* (#175)
+- **CMF Buds Pro**: *Corsola* (#222)
+- **CMF Neckband Pro**: *Crobat* (#169)
+- **Nothing Ear (open)**: *Flaaffy* (#180)
 
 ---
 
-## 🤝 Contributing & Community
-Issues, model requests, and pull requests are welcomed!
-- GitHub Repository: [https://github.com/qwertiian/nothing-buds-webapp](https://github.com/qwertiian/nothing-buds-webapp)
+## 📱 Supported Devices
 
-*Disclaimer: This is an unofficial, community-driven open-source project. Nothing and CMF are trademarks of Nothing Technology Limited.*
+Ear (OS) supports the full range of Nothing & CMF Bluetooth audio devices:
 
+| Device | Internal Codename | Max ANC | Ultra Bass | Graphic EQ |
+| :--- | :--- | :---: | :---: | :---: |
+| **CMF Buds 2** | *Donphan* | 42 dB | ✅ | ✅ |
+| **CMF Buds Pro 2** | *Espeon* | 50 dB | ✅ | ✅ |
+| **Nothing Ear (2024)** | *Entei* | 45 dB | ✅ | ✅ |
+| **Nothing Ear (a)** | *Cleffa* | 45 dB | ✅ | ✅ |
+| **Nothing Ear (2)** | *Lugia* | 40 dB | ❌ | ✅ |
+| **Nothing Ear (1)** | *Mew* | 34 dB | ❌ | ✅ |
+| **Nothing Ear (stick)** | *Togepi* | Half-in-ear | ❌ | ✅ |
+| **CMF Buds** | *Donphan* | 42 dB | ✅ | ✅ |
+| **CMF Buds Pro** | *Corsola* | 45 dB | ✅ | ✅ |
+| **CMF Neckband Pro** | *Crobat* | 50 dB | ✅ | ✅ |
+| **Nothing Ear (open)** | *Flaaffy* | Open-ear | ❌ | ✅ |
+
+---
+
+## 🔒 Privacy & Security
+
+- **100% Client-Side**: Ear (OS) runs entirely inside your browser sandbox or standalone PWA container.
+- **Zero Cloud Communication**: Your serial packets, device status, and equalizer curves never leave your local machine.
+- **No Account / No Tracking**: No login, no analytics trackers, no advertising cookies.
+
+---
+
+## 🌐 Browser Compatibility
+
+Ear (OS) uses the standard **Web Serial API** over Bluetooth Serial Port Profile (SPP):
+
+| Browser | Windows | macOS | Linux | ChromeOS |
+| :--- | :---: | :---: | :---: | :---: |
+| **Google Chrome** | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Supported |
+| **Microsoft Edge** | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Supported |
+| **Brave** | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Supported |
+| **Opera / Opera GX** | ✅ Supported | ✅ Supported | ✅ Supported | ✅ Supported |
+
+---
+
+## 📄 License & Disclaimer
+
+- **License**: Released under the [MIT License](LICENSE).
+- **Disclaimer**: *Ear (OS) is an independent, community-driven open-source project. Nothing, CMF, and their respective logos are registered trademarks of Nothing Technology Limited. This project is not affiliated with, endorsed by, or sponsored by Nothing Technology Limited.*
