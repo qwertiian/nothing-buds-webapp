@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEarbudController } from './hooks/useEarbudController';
 import { Navbar } from './components/layout/Navbar';
 import { DeviceShowcase } from './components/device/DeviceShowcase';
 import { BatteryCard } from './components/battery/BatteryCard';
 import { AncStudio } from './components/anc/AncStudio';
 import { EqualizerStudio } from './components/eq/EqualizerStudio';
-import { GestureStudio } from './components/gestures/GestureStudio';
 import { DeviceSettings } from './components/settings/DeviceSettings';
 import { PokemonCompanion } from './components/themes/PokemonCompanion';
 import { BluetoothModal } from './components/connection/BluetoothModal';
-import { Sliders, Volume2, Gamepad2, Sparkles, Settings, Github, ExternalLink, Bluetooth, ShieldCheck } from 'lucide-react';
+import { FirstTimePermissionsModal } from './components/onboarding/FirstTimePermissionsModal';
+import { Sliders, Volume2, Sparkles, Settings, Github, ExternalLink, Bluetooth, ShieldCheck } from 'lucide-react';
 
 export function App() {
   const {
@@ -29,16 +29,35 @@ export function App() {
     setInEarDetection,
     setLowLagMode,
     setDualConnection,
-    setGesture,
     toggleRinging,
   } = useEarbudController();
 
-  const [activeTab, setActiveTab] = useState<'controls' | 'eq' | 'gestures' | 'settings' | 'pokemon'>('controls');
+  const [activeTab, setActiveTab] = useState<'controls' | 'eq' | 'settings' | 'pokemon'>('controls');
   const [showConnectModal, setShowConnectModal] = useState(false);
+  const [showFirstTimeModal, setShowFirstTimeModal] = useState(false);
+
+  // Check if first-time permission onboarding is needed
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('nothing_buds_permissions_granted');
+    if (!hasSeenOnboarding && !state.connected) {
+      setShowFirstTimeModal(true);
+    }
+  }, []);
 
   const handleOpenConnect = () => {
     prepareBluetoothRadio();
     setShowConnectModal(true);
+  };
+
+  const handleGrantFirstTime = () => {
+    localStorage.setItem('nothing_buds_permissions_granted', 'true');
+    setShowFirstTimeModal(false);
+    handleOpenConnect();
+  };
+
+  const handleDismissFirstTime = () => {
+    localStorage.setItem('nothing_buds_permissions_granted', 'dismissed');
+    setShowFirstTimeModal(false);
   };
 
   return (
@@ -107,7 +126,7 @@ export function App() {
         {/* Battery Gauges */}
         <BatteryCard battery={state.battery} />
 
-        {/* Studio Navigation Tabs */}
+        {/* Studio Navigation Tabs (Gestures removed per user request) */}
         <div className="flex items-center gap-1.5 p-1.5 rounded-xl border border-[var(--border-dim)] bg-[var(--bg-surface)] overflow-x-auto">
           <button
             onClick={() => setActiveTab('controls')}
@@ -131,18 +150,6 @@ export function App() {
           >
             <Sliders className="w-3.5 h-3.5" />
             <span>Equalizer</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('gestures')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono transition whitespace-nowrap ${
-              activeTab === 'gestures'
-                ? 'bg-[var(--text-main)] text-[var(--bg-app)] font-bold shadow'
-                : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--border-dim)]'
-            }`}
-          >
-            <Gamepad2 className="w-3.5 h-3.5" />
-            <span>Gestures</span>
           </button>
 
           <button
@@ -190,14 +197,6 @@ export function App() {
               onSetCustomEq={setCustomEq}
               ultraBass={state.ultraBass}
               onSetUltraBass={setUltraBass}
-              model={state.model}
-            />
-          )}
-
-          {activeTab === 'gestures' && (
-            <GestureStudio
-              gestures={state.gestures}
-              onSetGesture={setGesture}
               model={state.model}
             />
           )}
@@ -256,6 +255,13 @@ export function App() {
         isConnecting={state.isConnecting}
         error={error}
         detectedName={state.systemDeviceName}
+      />
+
+      {/* First-Time Setup Permissions Modal */}
+      <FirstTimePermissionsModal
+        isOpen={showFirstTimeModal}
+        onGrant={handleGrantFirstTime}
+        onDismiss={handleDismissFirstTime}
       />
     </div>
   );

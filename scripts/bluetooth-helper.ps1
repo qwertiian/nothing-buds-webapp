@@ -77,3 +77,4 @@ switch ($Action) {
     "status"  { Get-BluetoothRadioStatus }
     default   { Get-BluetoothDevices }
 }
+
